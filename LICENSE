@@ -1,0 +1,11 @@
+(c) 2010 - 2024 Dr. Jens Oehlschlägel
+
+Our C-code (mostly algorithms) is under the BSD-3-Clause licence.
+Our R-code   (mostly testbed)  is under the GPL-3 clause.
+
+Note that the following algorithms included for comparison are Copyright Andrey Astrelin under a MIT license: Grailsort and Grailsqrt (c 2013), Sqrtsort (c 2014), for details see docs/LICENCE_Grailsort.txt and docs/LICENCE_Sqrtsort.txt.
+
+Note that that the greeNsort(R) brand and logo are protected trademarks of Dr. Jens Oehlschlägel and must not be used without permission.
+Note that there is a self-certification process which allows to use the "grey" logo if the self-certification conditions are fulfilled.
+
+Errors and omissions excepted

@@ -1,0 +1,749 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+<meta name="author" content="Dr. Jens Oehlschlägel" />
+
+
+<title>greeNsort-3-development</title>
+
+<script>// Pandoc 2.9 adds attributes on both header and div. We remove the former (to
+// be compatible with the behavior of Pandoc < 2.8).
+document.addEventListener('DOMContentLoaded', function(e) {
+  var hs = document.querySelectorAll("div.section[class*='level'] > :first-child");
+  var i, h, a;
+  for (i = 0; i < hs.length; i++) {
+    h = hs[i];
+    if (!/^h[1-6]$/i.test(h.tagName)) continue;  // it should be a header h1-h6
+    a = h.attributes;
+    while (a.length > 0) h.removeAttribute(a[0].name);
+  }
+});
+</script>
+
+<style type="text/css">
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+span.underline{text-decoration: underline;}
+div.column{display: inline-block; vertical-align: top; width: 50%;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+</style>
+
+
+
+<style type="text/css">
+code {
+white-space: pre;
+}
+.sourceCode {
+overflow: visible;
+}
+</style>
+<style type="text/css" data-origin="pandoc">
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+{ counter-reset: source-line 0; }
+pre.numberSource code > span
+{ position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+{ content: counter(source-line);
+position: relative; left: -1em; text-align: right; vertical-align: baseline;
+border: none; display: inline-block;
+-webkit-touch-callout: none; -webkit-user-select: none;
+-khtml-user-select: none; -moz-user-select: none;
+-ms-user-select: none; user-select: none;
+padding: 0 4px; width: 4em;
+color: #aaaaaa;
+}
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa; padding-left: 4px; }
+div.sourceCode
+{ }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } 
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.at { color: #7d9029; } 
+code span.bn { color: #40a070; } 
+code span.bu { color: #008000; } 
+code span.cf { color: #007020; font-weight: bold; } 
+code span.ch { color: #4070a0; } 
+code span.cn { color: #880000; } 
+code span.co { color: #60a0b0; font-style: italic; } 
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.do { color: #ba2121; font-style: italic; } 
+code span.dt { color: #902000; } 
+code span.dv { color: #40a070; } 
+code span.er { color: #ff0000; font-weight: bold; } 
+code span.ex { } 
+code span.fl { color: #40a070; } 
+code span.fu { color: #06287e; } 
+code span.im { color: #008000; font-weight: bold; } 
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.kw { color: #007020; font-weight: bold; } 
+code span.op { color: #666666; } 
+code span.ot { color: #007020; } 
+code span.pp { color: #bc7a00; } 
+code span.sc { color: #4070a0; } 
+code span.ss { color: #bb6688; } 
+code span.st { color: #4070a0; } 
+code span.va { color: #19177c; } 
+code span.vs { color: #4070a0; } 
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } 
+</style>
+<script>
+// apply pandoc div.sourceCode style to pre.sourceCode instead
+(function() {
+  var sheets = document.styleSheets;
+  for (var i = 0; i < sheets.length; i++) {
+    if (sheets[i].ownerNode.dataset["origin"] !== "pandoc") continue;
+    try { var rules = sheets[i].cssRules; } catch (e) { continue; }
+    var j = 0;
+    while (j < rules.length) {
+      var rule = rules[j];
+      // check if there is a div.sourceCode rule
+      if (rule.type !== rule.STYLE_RULE || rule.selectorText !== "div.sourceCode") {
+        j++;
+        continue;
+      }
+      var style = rule.style.cssText;
+      // check if color or background-color is set
+      if (rule.style.color === '' && rule.style.backgroundColor === '') {
+        j++;
+        continue;
+      }
+      // replace div.sourceCode by a pre.sourceCode rule
+      sheets[i].deleteRule(j);
+      sheets[i].insertRule('pre.sourceCode{' + style + '}', j);
+    }
+  }
+})();
+</script>
+
+
+
+
+<style type="text/css">body {
+background-color: #fff;
+margin: 1em auto;
+max-width: 700px;
+overflow: visible;
+padding-left: 2em;
+padding-right: 2em;
+font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+font-size: 14px;
+line-height: 1.35;
+}
+#TOC {
+clear: both;
+margin: 0 0 10px 10px;
+padding: 4px;
+width: 400px;
+border: 1px solid #CCCCCC;
+border-radius: 5px;
+background-color: #f6f6f6;
+font-size: 13px;
+line-height: 1.3;
+}
+#TOC .toctitle {
+font-weight: bold;
+font-size: 15px;
+margin-left: 5px;
+}
+#TOC ul {
+padding-left: 40px;
+margin-left: -1.5em;
+margin-top: 5px;
+margin-bottom: 5px;
+}
+#TOC ul ul {
+margin-left: -2em;
+}
+#TOC li {
+line-height: 16px;
+}
+table {
+margin: 1em auto;
+border-width: 1px;
+border-color: #DDDDDD;
+border-style: outset;
+border-collapse: collapse;
+}
+table th {
+border-width: 2px;
+padding: 5px;
+border-style: inset;
+}
+table td {
+border-width: 1px;
+border-style: inset;
+line-height: 18px;
+padding: 5px 5px;
+}
+table, table th, table td {
+border-left-style: none;
+border-right-style: none;
+}
+table thead, table tr.even {
+background-color: #f7f7f7;
+}
+p {
+margin: 0.5em 0;
+}
+blockquote {
+background-color: #f6f6f6;
+padding: 0.25em 0.75em;
+}
+hr {
+border-style: solid;
+border: none;
+border-top: 1px solid #777;
+margin: 28px 0;
+}
+dl {
+margin-left: 0;
+}
+dl dd {
+margin-bottom: 13px;
+margin-left: 13px;
+}
+dl dt {
+font-weight: bold;
+}
+ul {
+margin-top: 0;
+}
+ul li {
+list-style: circle outside;
+}
+ul ul {
+margin-bottom: 0;
+}
+pre, code {
+background-color: #f7f7f7;
+border-radius: 3px;
+color: #333;
+white-space: pre-wrap; 
+}
+pre {
+border-radius: 3px;
+margin: 5px 0px 10px 0px;
+padding: 10px;
+}
+pre:not([class]) {
+background-color: #f7f7f7;
+}
+code {
+font-family: Consolas, Monaco, 'Courier New', monospace;
+font-size: 85%;
+}
+p > code, li > code {
+padding: 2px 0px;
+}
+div.figure {
+text-align: center;
+}
+img {
+background-color: #FFFFFF;
+padding: 2px;
+border: 1px solid #DDDDDD;
+border-radius: 3px;
+border: 1px solid #CCCCCC;
+margin: 0 5px;
+}
+h1 {
+margin-top: 0;
+font-size: 35px;
+line-height: 40px;
+}
+h2 {
+border-bottom: 4px solid #f7f7f7;
+padding-top: 10px;
+padding-bottom: 2px;
+font-size: 145%;
+}
+h3 {
+border-bottom: 2px solid #f7f7f7;
+padding-top: 10px;
+font-size: 120%;
+}
+h4 {
+border-bottom: 1px solid #f7f7f7;
+margin-left: 8px;
+font-size: 105%;
+}
+h5, h6 {
+border-bottom: 1px solid #ccc;
+font-size: 105%;
+}
+a {
+color: #0033dd;
+text-decoration: none;
+}
+a:hover {
+color: #6666ff; }
+a:visited {
+color: #800080; }
+a:visited:hover {
+color: #BB00BB; }
+a[href^="http:"] {
+text-decoration: underline; }
+a[href^="https:"] {
+text-decoration: underline; }
+
+code > span.kw { color: #555; font-weight: bold; } 
+code > span.dt { color: #902000; } 
+code > span.dv { color: #40a070; } 
+code > span.bn { color: #d14; } 
+code > span.fl { color: #d14; } 
+code > span.ch { color: #d14; } 
+code > span.st { color: #d14; } 
+code > span.co { color: #888888; font-style: italic; } 
+code > span.ot { color: #007020; } 
+code > span.al { color: #ff0000; font-weight: bold; } 
+code > span.fu { color: #900; font-weight: bold; } 
+code > span.er { color: #a61717; background-color: #e3d2d2; } 
+</style>
+
+
+
+
+</head>
+
+<body>
+
+
+
+
+<h1 class="title toc-ignore">greeNsort-3-development</h1>
+<h4 class="author">Dr. Jens Oehlschlägel</h4>
+
+
+<div id="TOC">
+<ul>
+<li><a href="#developing-greensort" id="toc-developing-greensort">Developing greeNsort</a></li>
+<li><a href="#compilation-options" id="toc-compilation-options">Compilation options</a></li>
+<li><a href="#verifying-correctness" id="toc-verifying-correctness">Verifying correctness</a></li>
+<li><a href="#testing-greensort" id="toc-testing-greensort">Testing
+greeNsort</a></li>
+<li><a href="#naming-conventions" id="toc-naming-conventions">Naming
+conventions</a></li>
+<li><a href="#adding-an-algorithm" id="toc-adding-an-algorithm">Adding
+an algorithm</a></li>
+</ul>
+</div>
+
+<!--- For HTML Only --->
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(greeNsort)</span></code></pre></div>
+<div id="developing-greensort" class="section level2">
+<h2>Developing greeNsort</h2>
+<p>This vignette explains how to configure and test algorithms in the
+<em>greeNsort</em> R package. We recommend that you are familiar with
+the <a href="greeNsort-quickstart.html"><em>greeNsort-quickstart</em></a>
+vignette and the <a href="greeNsort-measurement.html"><em>greeNsort-measurement</em></a>
+vignette.</p>
+</div>
+<div id="compilation-options" class="section level2">
+<h2>Compilation options</h2>
+<p>In <code>src/config.h</code> the following options for compiling the
+greeNsort package are available:</p>
+<div id="cran_compatible" class="section level3">
+<h3>CRAN_COMPATIBLE</h3>
+<p>Define <code>CRAN_COMPATIBLE</code> to use R’s memory allocator and
+R’s pseudo random number generator in algorithms (not only for deata
+generation). This option is a precondition for uploading the package to
+CRAN (which disallows C’s random number generator) and is useful for
+debugging probabilistic algorithms (using <code>set.seed()</code>).
+However, for measurement of original C behavior use the default:
+undefine <code>CRAN_COMPATIBLE</code>. The status of this compilation
+toggle ca be queried from R using <code>cran_compatible()</code>:</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">cran_compatible</span>()</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [1] TRUE</span></span></code></pre></div>
+</div>
+<div id="stable_test" class="section level3">
+<h3>STABLE_TEST</h3>
+<p>Define <code>STABLE_TEST</code> for test of stable algorithms and
+undefine <code>STABLE_TEST</code> for measurements (default). You can
+diagnose <code>STABLE_TEST</code> assuming UTF-8 by</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">current_issorted</span>(<span class="fu">c</span>(<span class="sc">+</span><span class="fl">0.5</span>, <span class="sc">-</span><span class="fl">0.5</span>))</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [1] FALSE</span></span></code></pre></div>
+<p>or</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="fu">current_issorted</span>(<span class="fu">c</span>(<span class="st">&#39;+0.5&#39;</span>, <span class="st">&#39;-0.5&#39;</span>))</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [1] TRUE</span></span></code></pre></div>
+<p>for more details see <a href="#verifying-correctness">Verifying
+correctness</a></p>
+</div>
+<div id="use_locale" class="section level3">
+<h3>USE_LOCALE</h3>
+<p>Define <code>USE_LOCALE</code> for utf-8 string comparison via
+<code>strcoll</code> (default) and undefine <code>USE_LOCALE</code> for
+naive string comparison via <code>strcmp</code>.</p>
+<p>Note that in pure R</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>x <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">&#39;ä&#39;</span>,<span class="st">&#39;z&#39;</span>)</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(<span class="fu">sort</span>(x))  <span class="co"># UTF-8 interpretation</span></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [1] &quot;ä&quot; &quot;z&quot;</span></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(<span class="fu">sort</span>(x, <span class="at">method=</span><span class="st">&quot;radix&quot;</span>))  <span class="co"># naive byte interpretation</span></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [1] &quot;z&quot; &quot;ä&quot;</span></span></code></pre></div>
+<p>You can diagnose <code>USE_LOCALE</code> assuming UTF-8 by</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>x <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">&#39;ä&#39;</span>,<span class="st">&#39;z&#39;</span>)</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="fu">current_issorted</span>(x)</span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [1] TRUE</span></span></code></pre></div>
+</div>
+<div id="size-limits" class="section level3">
+<h3>Size-Limits</h3>
+<p>The following limits were used for measurements, and we suggest some
+other configurations.</p>
+<pre><code>#define TRIPLET_LIMIT 32
+#define INSERTIONSORT_LIMIT 64
+#define VINSERTIONSORT_LIMIT 128
+#define DUAL_PIVOT_TINY_SIZE INSERTIONSORT_LIMIT
+#define DUAL_PIVOT_DIST_SIZE 12
+#define THREAD_LIMIT_MERGE 1024
+#define THREAD_LIMIT_SORT 1024</code></pre>
+<p>Note that the smallest (topmost) configuration with
+<code>INSERTIONSORT_LIMIT 0</code> can modify the compiled code beyond
+replacing a constant. The <code>INSERTIONSORT_LIMIT</code> can be
+queried in R with <code>insertionsort_limit()</code>:</p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="fu">insertionsort_limit</span>()</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [1] 64</span></span></code></pre></div>
+</div>
+<div id="branch-misprediction" class="section level3">
+<h3>Branch-misprediction</h3>
+<p><code>QUICKSORT_BLOCKSIZE</code> ist used partitioning sorts reducing
+branch-misprediction, <code>MERGESORT_BLOCKSIZE</code> was experimental
+and is currently not used.</p>
+<p>Some merging algorithms tried to use inline inline comparisons to
+trigger the compiler to use conditional moves CMOV (worked under gcc-6),
+define MERGESORT_BTUNE_WITH_REGISTER for using register in doing so,
+undefine MERGESORT_BTUNE_WITH_REGISTER for simpler inline
+comparison.</p>
+</div>
+<div id="other-configuration" class="section level3">
+<h3>Other configuration</h3>
+<p>The are alternative implementations for double increment
+<code>INC2</code> and decrement <code>DEC2</code> used in gapped
+<em>GKnuthsort</em> (and <em>GInsertionsort</em>). I have not
+systematially explored these.</p>
+</div>
+<div id="data-types" class="section level3">
+<h3>data types</h3>
+<p>The equally sized data type <code>VALUE_T</code> must be set to
+<code>double</code>in the context of R package greeNsort, and the index
+type <code>INDEX_T</code> to <code>int</code>.</p>
+</div>
+</div>
+<div id="verifying-correctness" class="section level2">
+<h2>Verifying correctness</h2>
+<p>In R the sorting of a vector can be verified by using
+<code>is.unsorted()</code>:</p>
+<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>x <span class="ot">&lt;-</span> <span class="fu">runif</span>(<span class="dv">9</span>)</span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>y <span class="ot">&lt;-</span> <span class="fu">sort</span>(x)</span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a><span class="fu">c</span>(<span class="at">x=</span><span class="fu">is.unsorted</span>(x), <span class="at">y=</span><span class="fu">is.unsorted</span>(y))</span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;     x     y </span></span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  TRUE FALSE</span></span></code></pre></div>
+<p>The <em>greeNsort</em> package uses a trick to verify that the
+sorting of doubles is actually stable: it can be compiled with <a href="#stable_test">STABLE_TEST</a> to round the ignore digits after the
+decimal point when comparing for sorting. The R function
+<code>stable_keys()</code> returns numeric keys always stripped of the
+ignored digits (<em>irrespective</em> of the <code>STABLE_TEST</code>
+configuration):</p>
+<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>x <span class="ot">&lt;-</span> <span class="fu">seq</span>(<span class="sc">-</span><span class="dv">2</span>, <span class="dv">2</span>, <span class="at">by=</span><span class="fl">0.5</span>)</span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="fu">data.frame</span>(<span class="at">number_original=</span>x, <span class="at">number_stable=</span><span class="fu">stable_keys</span>(x), <span class="at">string_original=</span><span class="fu">num2str</span>(x), <span class="at">string_stable=</span><span class="fu">stable_keys</span>(<span class="fu">num2str</span>(x)))</span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;   number_original number_stable string_original string_stable</span></span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 1            -2.0            -2            -2.0            -2</span></span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 2            -1.5            -1            -1.5            -1</span></span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 3            -1.0            -1            -1.0            -1</span></span>
+<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 4            -0.5             0            -0.5            -0</span></span>
+<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 5             0.0             0            +0.0            +0</span></span>
+<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 6             0.5             0            +0.5            +0</span></span>
+<span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 7             1.0             1            +1.0            +1</span></span>
+<span id="cb10-11"><a href="#cb10-11" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 8             1.5             1            +1.5            +1</span></span>
+<span id="cb10-12"><a href="#cb10-12" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 9             2.0             2            +2.0            +2</span></span></code></pre></div>
+<p>The function <code>current_keys()</code> returns the key
+interpretation given the <code>STABLE_TEST</code> configuration:</p>
+<div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>x <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="sc">+</span><span class="fl">0.5</span>, <span class="dv">0</span>, <span class="sc">-</span><span class="fl">0.5</span>)</span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a><span class="fu">current_keys</span>(x)</span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [1]  0.5  0.0 -0.5</span></span></code></pre></div>
+<p>The function <code>current_compare()</code> returns the comparison
+results given the <code>STABLE_TEST</code> configuration:</p>
+<div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="fu">current_compare</span>(x, <span class="dv">0</span>)</span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [1]  1  0 -1</span></span></code></pre></div>
+<p>The function <code>current_issorted()</code> checks for sorted order
+given the <code>STABLE_TEST</code> configuration:</p>
+<div class="sourceCode" id="cb13"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>x <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="fl">9.1</span>, <span class="fl">8.9</span>, <span class="fl">1.9</span>, <span class="fl">1.1</span>)</span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>y <span class="ot">&lt;-</span> x[]; <span class="fu">invisible</span>(<span class="fu">Frogsort1</span>(y)) <span class="co"># sort to be verified</span></span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a><span class="fu">current_issorted</span>(y)</span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [1] TRUE</span></span></code></pre></div>
+<p>Note that this is slower than <code>is.unsorted</code>. However, to
+verify that a sorting algorithm is truly stable we must check that all
+keys considered equal have not changed original order. This verification
+requires a trusted stable sorting and testing that the candidate
+produced <code>identical()</code> results:</p>
+<div class="sourceCode" id="cb14"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>o <span class="ot">&lt;-</span> <span class="fu">order</span>(<span class="fu">current_keys</span>(x))       <span class="co"># order information</span></span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>x <span class="ot">&lt;-</span> x[o]</span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a><span class="fu">identical</span>(x,y)</span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [1] TRUE</span></span></code></pre></div>
+<p>Note that <code>order()</code> is slow and it is better to use a
+trusted stable sorting algorithm implementation such as
+<code>Knuthsort</code> as a reference.</p>
+</div>
+<div id="testing-greensort" class="section level2">
+<h2>Testing greeNsort</h2>
+<p>The <em>greeNsort<sup>®</sup></em> package neither uses the official
+package checking mechanism nor the popular <code>testthis</code>
+mechanism. Most functions in <em>greeNsort<sup>®</sup></em> are somewhat
+tested by running Examples during package checking
+(<code>R CMD check</code>). For testing the implemented algorithms the
+<em>greeNsort<sup>®</sup></em> package has regression-test-suites that
+can be called explicitly. Most use the data generated by
+<code>testdb</code> (double or converted to string), these suites are
+<code>testsort()</code> for sorting algorithms,
+<code>testselect()</code> for selection algorithms,
+<code>testpart()</code> for partial sorting algorithms.
+<code>vtestsort()</code> tests string sorting algorithms on the data in
+<code>vtestdb</code>.</p>
+<p>The main suite for testing sorting algorithms is
+<code>testsort()</code>, see <code>?testsort</code> for the meaning of
+its parameters. Here a quick example call doing three differently
+random-seeded replications R, three sample sizes N for two algorithms A
+on three data patterns D:</p>
+<div class="sourceCode" id="cb15"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="fu">testsort</span>(</span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">R =</span> <span class="dv">0</span><span class="sc">:</span><span class="dv">2</span>                               <span class="co"># random-number seeds for repetitions</span></span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>, <span class="at">N =</span> <span class="fu">c</span>(<span class="dv">99</span><span class="sc">:</span><span class="dv">101</span>)                         <span class="co"># sample sizes</span></span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a>, <span class="at">M =</span> <span class="fu">c</span>(<span class="st">&quot;pointer&quot;</span>, <span class="st">&quot;index&quot;</span>)             <span class="co"># methods (if available)</span></span>
+<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a>, <span class="at">S =</span> <span class="fu">c</span>(<span class="st">&quot;insitu&quot;</span>, <span class="st">&quot;exsitu&quot;</span>)             <span class="co"># situations (if available)</span></span>
+<span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a>, <span class="at">A =</span> <span class="fu">c</span>(<span class="st">&#39;Knuth&#39;</span>,<span class="st">&#39;Frog1&#39;</span>)                <span class="co"># algodb labels</span></span>
+<span id="cb15-7"><a href="#cb15-7" aria-hidden="true" tabindex="-1"></a>, <span class="at">D =</span> <span class="fu">c</span>(<span class="st">&#39;ascall&#39;</span>, <span class="st">&#39;permut&#39;</span>, <span class="st">&#39;descall&#39;</span>)  <span class="co"># testdb labels</span></span>
+<span id="cb15-8"><a href="#cb15-8" aria-hidden="true" tabindex="-1"></a>, <span class="at">T =</span> <span class="dv">1</span>                                 <span class="co"># thread counts</span></span>
+<span id="cb15-9"><a href="#cb15-9" aria-hidden="true" tabindex="-1"></a>, <span class="at">out =</span> <span class="st">&#39;&#39;</span></span>
+<span id="cb15-10"><a href="#cb15-10" aria-hidden="true" tabindex="-1"></a><span class="co">#, verbose = TRUE</span></span>
+<span id="cb15-11"><a href="#cb15-11" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb15-12"><a href="#cb15-12" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [1] TRUE</span></span></code></pre></div>
+<p>The regression testsuite for selection <code>testpart</code> applies
+to algorithms classified as “select” or “SELECT”.</p>
+<div class="sourceCode" id="cb16"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>algodb[algodb<span class="sc">$</span>task <span class="sc">%in%</span> <span class="fu">c</span>(<span class="st">&quot;select&quot;</span>,<span class="st">&quot;SELECT&quot;</span>), <span class="fu">c</span>(<span class="st">&quot;label&quot;</span>,<span class="st">&quot;task&quot;</span>)]</span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;       label   task</span></span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; bfprt bfprt select</span></span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; pick   pick select</span></span>
+<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; quick quick select</span></span>
+<span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; zick   zick SELECT</span></span>
+<span id="cb16-7"><a href="#cb16-7" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; zack   zack SELECT</span></span>
+<span id="cb16-8"><a href="#cb16-8" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; zuck   zuck SELECT</span></span>
+<span id="cb16-9"><a href="#cb16-9" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; zuckB zuckB SELECT</span></span>
+<span id="cb16-10"><a href="#cb16-10" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; duck   duck SELECT</span></span>
+<span id="cb16-11"><a href="#cb16-11" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; duckB duckB SELECT</span></span></code></pre></div>
+<p>“select” verifies the standard condition that the value of the k-th
+element is returned, had the data been sorted. “SELECT” additionally
+verifies that all ties with the k-th element are in their correct
+position, and that this range is returned correctly.</p>
+<div class="sourceCode" id="cb17"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="fu">testselect</span>(</span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">R =</span> <span class="dv">0</span></span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a>, <span class="at">N =</span> <span class="fu">c</span>(<span class="dv">99</span><span class="sc">:</span><span class="dv">101</span>)                         <span class="co"># sample sizes</span></span>
+<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a>, <span class="at">S =</span> <span class="st">&quot;insitu&quot;</span>                          <span class="co"># situations (if available)</span></span>
+<span id="cb17-5"><a href="#cb17-5" aria-hidden="true" tabindex="-1"></a>, <span class="at">A =</span> <span class="fu">c</span>(<span class="st">&quot;quick&quot;</span>,<span class="st">&quot;zack&quot;</span>)                 <span class="co"># algodb labels</span></span>
+<span id="cb17-6"><a href="#cb17-6" aria-hidden="true" tabindex="-1"></a>, <span class="at">D =</span> <span class="fu">c</span>(<span class="st">&quot;tielog2&quot;</span>,<span class="st">&quot;tiesqrt&quot;</span>)            <span class="co"># testdb labels</span></span>
+<span id="cb17-7"><a href="#cb17-7" aria-hidden="true" tabindex="-1"></a>, <span class="at">out =</span> <span class="st">&quot;&quot;</span></span>
+<span id="cb17-8"><a href="#cb17-8" aria-hidden="true" tabindex="-1"></a><span class="co">#, verbose = TRUE</span></span>
+<span id="cb17-9"><a href="#cb17-9" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb17-10"><a href="#cb17-10" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [1] TRUE</span></span></code></pre></div>
+<p>The regression testsuite for partial sorting <code>testpart</code>
+applies to algorithms classified as “partial” or “PARTIAL”. “partial”
+verifies the standard condition that all elements partially sorted
+between two positions are in correct position and sorted. “PARTIAL”
+additionally verifies that the positional range is properly extended to
+include all ties. The partial sorting algorithms derived from
+<em>Zacksort</em>, <em>Zucksort</em> and <em>Ducksort</em> can be
+modified to handle ties properly (and to return the extended range). The
+current versions do not do this and hence are classified as “partial”
+like the partial sorting derived from <em>Quicksort</em>.</p>
+<div class="sourceCode" id="cb18"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>algodb[algodb<span class="sc">$</span>task <span class="sc">%in%</span> <span class="fu">c</span>(<span class="st">&quot;partial&quot;</span>,<span class="st">&quot;PARTIAL&quot;</span>), <span class="fu">c</span>(<span class="st">&quot;label&quot;</span>,<span class="st">&quot;task&quot;</span>)]</span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;             label    task</span></span>
+<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; quickpl   quickpl partial</span></span>
+<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; quickpr   quickpr partial</span></span>
+<span id="cb18-5"><a href="#cb18-5" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; zackpl     zackpl partial</span></span>
+<span id="cb18-6"><a href="#cb18-6" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; zackpr     zackpr partial</span></span>
+<span id="cb18-7"><a href="#cb18-7" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; dotnetpt dotnetpt partial</span></span>
+<span id="cb18-8"><a href="#cb18-8" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; quickpt   quickpt partial</span></span>
+<span id="cb18-9"><a href="#cb18-9" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; zackpt     zackpt partial</span></span>
+<span id="cb18-10"><a href="#cb18-10" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; zuckpt     zuckpt partial</span></span>
+<span id="cb18-11"><a href="#cb18-11" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; zuckptB   zuckptB partial</span></span>
+<span id="cb18-12"><a href="#cb18-12" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; duckpt     duckpt partial</span></span>
+<span id="cb18-13"><a href="#cb18-13" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; duckptB   duckptB partial</span></span></code></pre></div>
+<div class="sourceCode" id="cb19"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="fu">testpart</span>(</span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">R=</span> <span class="dv">0</span><span class="sc">:</span><span class="dv">1</span></span>
+<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a>, <span class="at">N =</span> <span class="fu">c</span>(<span class="dv">99</span><span class="sc">:</span><span class="dv">101</span>)                         <span class="co"># sample sizes</span></span>
+<span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a>, <span class="at">S =</span> <span class="st">&quot;insitu&quot;</span>                          <span class="co"># situations (if available)</span></span>
+<span id="cb19-5"><a href="#cb19-5" aria-hidden="true" tabindex="-1"></a>, <span class="at">A =</span> <span class="fu">c</span>(<span class="st">&quot;quickpt&quot;</span>,<span class="st">&quot;quickpl&quot;</span>,<span class="st">&quot;quickpr&quot;</span>,<span class="st">&quot;zackpt&quot;</span>, <span class="st">&quot;zackpl&quot;</span>,<span class="st">&quot;zackpr&quot;</span>)  <span class="co"># algodb labels</span></span>
+<span id="cb19-6"><a href="#cb19-6" aria-hidden="true" tabindex="-1"></a>, <span class="at">D =</span> <span class="fu">c</span>(<span class="st">&quot;tielog2&quot;</span>,<span class="st">&quot;tiesqrt&quot;</span>)            <span class="co"># testdb labels</span></span>
+<span id="cb19-7"><a href="#cb19-7" aria-hidden="true" tabindex="-1"></a>, <span class="at">out =</span> <span class="st">&quot;&quot;</span></span>
+<span id="cb19-8"><a href="#cb19-8" aria-hidden="true" tabindex="-1"></a><span class="co">#, verbose = TRUE</span></span>
+<span id="cb19-9"><a href="#cb19-9" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb19-10"><a href="#cb19-10" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [1] TRUE</span></span></code></pre></div>
+<div class="sourceCode" id="cb20"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a>algodb[algodb<span class="sc">$</span>task <span class="sc">==</span> <span class="st">&#39;SORT&#39;</span> <span class="sc">&amp;</span> algodb<span class="sc">$</span>varying , <span class="fu">c</span>(<span class="st">&quot;label&quot;</span>,<span class="st">&quot;task&quot;</span>)]</span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;             label task</span></span>
+<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; UKnuth     UKnuth SORT</span></span>
+<span id="cb20-4"><a href="#cb20-4" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; UZack       UZack SORT</span></span>
+<span id="cb20-5"><a href="#cb20-5" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; UZackB     UZackB SORT</span></span>
+<span id="cb20-6"><a href="#cb20-6" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; WQuick2   WQuick2 SORT</span></span>
+<span id="cb20-7"><a href="#cb20-7" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; WQuick2B WQuick2B SORT</span></span>
+<span id="cb20-8"><a href="#cb20-8" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; VKnuth     VKnuth SORT</span></span>
+<span id="cb20-9"><a href="#cb20-9" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; VKnuthA   VKnuthA SORT</span></span>
+<span id="cb20-10"><a href="#cb20-10" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; VFrog1     VFrog1 SORT</span></span>
+<span id="cb20-11"><a href="#cb20-11" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; VFrog1A   VFrog1A SORT</span></span></code></pre></div>
+<p>xx text</p>
+<div class="sourceCode" id="cb21"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="fu">vtestsort</span>(</span>
+<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">R =</span> <span class="dv">0</span><span class="sc">:</span><span class="dv">1</span></span>
+<span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a>, <span class="at">A =</span> <span class="fu">c</span>(<span class="st">&quot;VFrog1&quot;</span>,<span class="st">&quot;WQuick2&quot;</span>,<span class="st">&quot;UZack&quot;</span>)</span>
+<span id="cb21-4"><a href="#cb21-4" aria-hidden="true" tabindex="-1"></a>, <span class="at">D =</span> <span class="fu">c</span>(<span class="st">&quot;KW&quot;</span>,<span class="st">&quot;KWa&quot;</span>,<span class="st">&quot;KWp&quot;</span>)</span>
+<span id="cb21-5"><a href="#cb21-5" aria-hidden="true" tabindex="-1"></a>, <span class="at">out =</span> <span class="st">&#39;&#39;</span></span>
+<span id="cb21-6"><a href="#cb21-6" aria-hidden="true" tabindex="-1"></a>, <span class="at">verbose =</span> <span class="cn">TRUE</span></span>
+<span id="cb21-7"><a href="#cb21-7" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb21-8"><a href="#cb21-8" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; n=19156 n2=98568; r=0; d=&#39;KW&#39;; a=&#39;VFrog1&#39;; m=&#39;index&#39;; s=&#39;insitu&#39;; passed</span></span>
+<span id="cb21-9"><a href="#cb21-9" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; n=19156 n2=98568; r=0; d=&#39;KW&#39;; a=&#39;VFrog1&#39;; m=&#39;index&#39;; s=&#39;exsitu&#39;; passed</span></span>
+<span id="cb21-10"><a href="#cb21-10" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; n=19156 n2=98568; r=0; d=&#39;KW&#39;; a=&#39;WQuick2&#39;; m=&#39;index&#39;; s=&#39;insitu&#39;; passed</span></span>
+<span id="cb21-11"><a href="#cb21-11" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; n=19156 n2=98568; r=0; d=&#39;KW&#39;; a=&#39;WQuick2&#39;; m=&#39;index&#39;; s=&#39;exsitu&#39;; passed</span></span>
+<span id="cb21-12"><a href="#cb21-12" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; n=19156 n2=98568; r=0; d=&#39;KW&#39;; a=&#39;UZack&#39;; m=&#39;index&#39;; s=&#39;insitu&#39;; passed</span></span>
+<span id="cb21-13"><a href="#cb21-13" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; n=19156 n2=98568; r=0; d=&#39;KW&#39;; a=&#39;UZack&#39;; m=&#39;index&#39;; s=&#39;exsitu&#39;; passed</span></span>
+<span id="cb21-14"><a href="#cb21-14" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; n=19156 n2=98568; r=0; d=&#39;KWa&#39;; a=&#39;VFrog1&#39;; m=&#39;index&#39;; s=&#39;insitu&#39;; passed</span></span>
+<span id="cb21-15"><a href="#cb21-15" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; n=19156 n2=98568; r=0; d=&#39;KWa&#39;; a=&#39;VFrog1&#39;; m=&#39;index&#39;; s=&#39;exsitu&#39;; passed</span></span>
+<span id="cb21-16"><a href="#cb21-16" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; n=19156 n2=98568; r=0; d=&#39;KWa&#39;; a=&#39;WQuick2&#39;; m=&#39;index&#39;; s=&#39;insitu&#39;; passed</span></span>
+<span id="cb21-17"><a href="#cb21-17" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; n=19156 n2=98568; r=0; d=&#39;KWa&#39;; a=&#39;WQuick2&#39;; m=&#39;index&#39;; s=&#39;exsitu&#39;; passed</span></span>
+<span id="cb21-18"><a href="#cb21-18" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; n=19156 n2=98568; r=0; d=&#39;KWa&#39;; a=&#39;UZack&#39;; m=&#39;index&#39;; s=&#39;insitu&#39;; passed</span></span>
+<span id="cb21-19"><a href="#cb21-19" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; n=19156 n2=98568; r=0; d=&#39;KWa&#39;; a=&#39;UZack&#39;; m=&#39;index&#39;; s=&#39;exsitu&#39;; passed</span></span>
+<span id="cb21-20"><a href="#cb21-20" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; n=19156 n2=98568; r=0; d=&#39;KWp&#39;; a=&#39;VFrog1&#39;; m=&#39;index&#39;; s=&#39;insitu&#39;; passed</span></span>
+<span id="cb21-21"><a href="#cb21-21" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; n=19156 n2=98568; r=0; d=&#39;KWp&#39;; a=&#39;VFrog1&#39;; m=&#39;index&#39;; s=&#39;exsitu&#39;; passed</span></span>
+<span id="cb21-22"><a href="#cb21-22" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; n=19156 n2=98568; r=0; d=&#39;KWp&#39;; a=&#39;WQuick2&#39;; m=&#39;index&#39;; s=&#39;insitu&#39;; passed</span></span>
+<span id="cb21-23"><a href="#cb21-23" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; n=19156 n2=98568; r=0; d=&#39;KWp&#39;; a=&#39;WQuick2&#39;; m=&#39;index&#39;; s=&#39;exsitu&#39;; passed</span></span>
+<span id="cb21-24"><a href="#cb21-24" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; n=19156 n2=98568; r=0; d=&#39;KWp&#39;; a=&#39;UZack&#39;; m=&#39;index&#39;; s=&#39;insitu&#39;; passed</span></span>
+<span id="cb21-25"><a href="#cb21-25" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; n=19156 n2=98568; r=0; d=&#39;KWp&#39;; a=&#39;UZack&#39;; m=&#39;index&#39;; s=&#39;exsitu&#39;; passed</span></span>
+<span id="cb21-26"><a href="#cb21-26" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; n=19156 n2=98568; r=1; d=&#39;KWp&#39;; a=&#39;VFrog1&#39;; m=&#39;index&#39;; s=&#39;insitu&#39;; passed</span></span>
+<span id="cb21-27"><a href="#cb21-27" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; n=19156 n2=98568; r=1; d=&#39;KWp&#39;; a=&#39;VFrog1&#39;; m=&#39;index&#39;; s=&#39;exsitu&#39;; passed</span></span>
+<span id="cb21-28"><a href="#cb21-28" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; n=19156 n2=98568; r=1; d=&#39;KWp&#39;; a=&#39;WQuick2&#39;; m=&#39;index&#39;; s=&#39;insitu&#39;; passed</span></span>
+<span id="cb21-29"><a href="#cb21-29" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; n=19156 n2=98568; r=1; d=&#39;KWp&#39;; a=&#39;WQuick2&#39;; m=&#39;index&#39;; s=&#39;exsitu&#39;; passed</span></span>
+<span id="cb21-30"><a href="#cb21-30" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; n=19156 n2=98568; r=1; d=&#39;KWp&#39;; a=&#39;UZack&#39;; m=&#39;index&#39;; s=&#39;insitu&#39;; passed</span></span>
+<span id="cb21-31"><a href="#cb21-31" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; n=19156 n2=98568; r=1; d=&#39;KWp&#39;; a=&#39;UZack&#39;; m=&#39;index&#39;; s=&#39;exsitu&#39;; passed</span></span>
+<span id="cb21-32"><a href="#cb21-32" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; -- OK --</span></span>
+<span id="cb21-33"><a href="#cb21-33" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [1] TRUE</span></span></code></pre></div>
+</div>
+<div id="naming-conventions" class="section level2">
+<h2>Naming conventions</h2>
+<p>For a sorting algorithm <em>Foobar</em> we use uppercase letters to
+mark specific versions of it:</p>
+<ul>
+<li><em>Foobarsort</em> by default denotes a version mainly using index
+notation</li>
+<li><em>FoobarsortP</em> denotes a version using mainly pointer
+arithmetic</li>
+<li><em>FoobarsortA</em> denotes a version tuned for adaptivity to
+ascending data</li>
+<li><em>FoobarsortB</em> denotes a version tuned to avoid branch
+mispredictions</li>
+<li><em>PFoobarsort</em> denotes a version for parallel execution
+(pthreads)</li>
+<li><em>SFoobarsort</em> denotes a version that has been stabilized by
+breaking ties with a second comparison based on a helper vector of
+original positions (or pointers). Note that random access is avoided by
+SWAPping both, elements and helper</li>
+<li><em>VFoobarsort</em> denotes a version directly sorting variable
+(string) data</li>
+<li><em>WFoobarsort</em> denotes a version indirectly sorting variable
+(string) data by swapping index or pointer elements referring to the
+data element which remains in its original location. Note that this
+incurs random access to the data</li>
+<li><em>RFoobarsort</em> a stabilized variant of <em>WFoobarsort</em>
+breaking ties with a second comparison based on the index or pointer
+vector</li>
+</ul>
+</div>
+<div id="adding-an-algorithm" class="section level2">
+<h2>Adding an algorithm</h2>
+<p>For adding a C algorithm – assume the name <em>Foobarsort</em> – to
+the <em>greeNsort</em> package, you should make the following code
+changes:</p>
+<div id="the-c-code" class="section level3">
+<h3>The C-code</h3>
+<p>Add a file <code>Foobarsort.c</code> (perhaps using a headerfile
+<code>Foobar.h</code>). I should include</p>
+<div class="sourceCode" id="cb22"><pre class="sourceCode c"><code class="sourceCode c"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="pp">#include </span><span class="im">&quot;algo.h&quot;</span></span>
+<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a><span class="pp">#if INSERTIONSORT_LIMIT &gt; 0</span></span>
+<span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a><span class="pp">#  include </span><span class="im">&quot;Insertionsort_l2r.h&quot;</span></span>
+<span id="cb22-4"><a href="#cb22-4" aria-hidden="true" tabindex="-1"></a><span class="pp">#endif</span></span></code></pre></div>
+<p>and finally define <code>Foobarsort_insitu</code> and
+<code>Foobarsort_exsitu</code>.</p>
+</div>
+<div id="the-glue-code" class="section level3">
+<h3>The glue-code</h3>
+<p>In order to make the C-code available to the package, there is
+glue-code necessary in the following files</p>
+<ul>
+<li><code>greeNsort.h</code> (declaration of the C-functions)</li>
+<li><code>greeNsort.r.h</code> (declaration of the Call-interface
+functions using S-expressions)</li>
+<li><code>greeNsort.r.c</code> (definition of the Call-interface
+functions)</li>
+<li><code>init.c</code> (declaration of access name for dll)</li>
+</ul>
+<p>In order to avoid redundant code, <code>greeNsort.r.c</code>
+partially uses pre-processor macros for Call-functions with similar
+signature. Note that each function has two entries in
+<code>init.c</code>, an extern declaration and a name definition
+including the number of S-expressions.</p>
+</div>
+<div id="the-r-code" class="section level3">
+<h3>The R-code</h3>
+<p>All R-callable algorithms are defined in greensort.R . The Function
+definition should always have
+<code>function(x, situation=c(&quot;insitu&quot;,&quot;exsitu&quot;), method=c(&quot;index&quot;,&quot;pointer&quot;))</code>
+with the available methods listed even if only one method is
+available.</p>
+<p>Also above the R-code the roxygen documentation is needed,
+particularly its <code>export</code> directive, otherwise the R-function
+will not be exported to the <code>NAMESPACE</code> file. The roxygen
+sections as we wrote them use information from the <code>algodb</code>
+documentation object, which is defined further down in the
+<code>greeNsort.R</code> file, which needs a defintion of
+<em>Foobar</em> therein. These definitions are maintained in the file
+<code>/inst/docs/algodb.xlsx</code> and copied from there into
+<code>greeNsort.R</code>.</p>
+</div>
+</div>
+
+
+
+<!-- code folding -->
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

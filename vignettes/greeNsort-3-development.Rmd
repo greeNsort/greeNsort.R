@@ -1,0 +1,306 @@
+---
+title: "greeNsort-3-development"
+author: "Dr. Jens Oehlschlägel"
+output: 
+  rmarkdown::html_vignette:
+    toc: true
+    toc_depth: 2
+vignette: >
+  %\VignetteIndexEntry{greeNsort-3-development}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+
+<!--- For HTML Only --->
+`r if (!knitr:::is_latex_output()) '
+\\renewcommand{\\BigO}[1]{\\mathcal{O}(#1)}
+'`
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE
+, comment = "#>"
+, fig.width = 7.5
+, fig.height = 5 
+, out.width = "100%"
+)
+```
+
+```{r setup}
+library(greeNsort)
+```
+
+
+## Developing greeNsort
+
+This vignette explains how to configure and test algorithms in the *greeNsort* R package. We recommend that you are familiar with the [*greeNsort-1-quickstart*](greeNsort-1-quickstart.html) vignette and the [*greeNsort-measurement*](greeNsort-measurement.html) vignette.
+
+
+## Compilation options
+
+In `src/config.h` the following options for compiling the greeNsort package are available:
+
+### CRAN_COMPATIBLE
+
+Define `CRAN_COMPATIBLE` to use R's memory allocator and R's pseudo random number generator in algorithms (not only for deata generation). This option is a precondition for uploading the package to CRAN (which disallows C's random number generator) and is useful for debugging probabilistic algorithms (using `set.seed()`). However, for measurement of original C behavior use the default: undefine `CRAN_COMPATIBLE`. The status of this compilation toggle ca be queried from R using `cran_compatible()`:
+
+```{r} 
+cran_compatible()
+``` 
+
+
+
+### STABLE_TEST
+
+Define `STABLE_TEST` for test of stable algorithms and undefine `STABLE_TEST` for measurements (default). You can diagnose `STABLE_TEST` assuming UTF-8 by
+
+
+```{r}
+current_issorted(c(+0.5, -0.5))
+```
+
+or
+
+```{r}
+current_issorted(c('+0.5', '-0.5'))
+```
+
+for more details see [Verifying correctness]
+
+### USE_LOCALE
+
+Define `USE_LOCALE` for utf-8 string comparison via `strcoll` (default) and undefine `USE_LOCALE` for naive string comparison via `strcmp`. 
+
+Note that in pure R
+
+```{r}
+x <- c('ä','z')
+print(sort(x))  # UTF-8 interpretation
+print(sort(x, method="radix"))  # naive byte interpretation
+```
+
+You can diagnose `USE_LOCALE` assuming UTF-8 by
+
+```{r}
+x <- c('ä','z')
+current_issorted(x)
+```
+
+
+### Size-Limits
+
+The following limits were used for measurements, and we suggest some other configurations. 
+
+```
+#define TRIPLET_LIMIT 32
+#define INSERTIONSORT_LIMIT 64
+#define VINSERTIONSORT_LIMIT 128
+#define DUAL_PIVOT_TINY_SIZE INSERTIONSORT_LIMIT
+#define DUAL_PIVOT_DIST_SIZE 12
+#define THREAD_LIMIT_MERGE 1024
+#define THREAD_LIMIT_SORT 1024
+```
+
+Note that the smallest (topmost) configuration with `INSERTIONSORT_LIMIT 0` can modify the compiled code beyond replacing a constant. The `INSERTIONSORT_LIMIT` can be queried in R with `insertionsort_limit()`: 
+
+```{r} 
+insertionsort_limit()
+```
+
+
+### Branch-misprediction
+
+`QUICKSORT_BLOCKSIZE` ist used partitioning sorts reducing branch-misprediction, `MERGESORT_BLOCKSIZE` was experimental and is currently not used.
+
+Some merging algorithms tried to use inline inline comparisons to trigger the compiler to use conditional moves CMOV (worked under gcc-6), define MERGESORT_BTUNE_WITH_REGISTER for using register in doing so, undefine MERGESORT_BTUNE_WITH_REGISTER for simpler inline comparison.
+
+### Other configuration
+
+The are alternative implementations for double increment `INC2` and decrement `DEC2` used in gapped *GKnuthsort* (and *GInsertionsort*). I have not systematially explored these. 
+
+### data types
+
+The equally sized data type `VALUE_T` must be set to `double`in the context of R package greeNsort, and the index type `INDEX_T` to `int`.
+
+
+## Verifying correctness 
+
+In R the sorting of a vector can be verified by using `is.unsorted()`:
+
+```{r}
+x <- runif(9)
+y <- sort(x)
+c(x=is.unsorted(x), y=is.unsorted(y))
+```
+
+The *greeNsort* package uses a trick to verify that the sorting of doubles is actually stable: it can be compiled with [STABLE_TEST] to round the ignore digits after the decimal point when comparing for sorting. The R function `stable_keys()` returns numeric keys always stripped of the ignored digits (*irrespective* of the `STABLE_TEST` configuration):
+
+```{r}
+x <- seq(-2, 2, by=0.5)
+data.frame(number_original=x, number_stable=stable_keys(x), string_original=num2str(x), string_stable=stable_keys(num2str(x)))
+```
+
+
+The function `current_keys()` returns the key interpretation given the `STABLE_TEST` configuration: 
+
+```{r}
+x <- c(+0.5, 0, -0.5)
+current_keys(x)
+```
+
+The function `current_compare()` returns the comparison results given the `STABLE_TEST` configuration: 
+
+```{r}
+current_compare(x, 0)
+```
+
+The function `current_issorted()` checks for sorted order given the `STABLE_TEST` configuration: 
+
+```{r}
+x <- c(9.1, 8.9, 1.9, 1.1)
+y <- x[]; invisible(Frogsort1(y)) # sort to be verified
+current_issorted(y)
+```
+
+Note that  this is slower than `is.unsorted`. However, to verify that a sorting algorithm is truly stable we must check that all keys considered equal have not changed original order. This verification requires a trusted stable sorting and testing that the candidate produced `identical()` results:
+
+```{r}
+o <- order(current_keys(x))       # order information
+x <- x[o]
+identical(x,y)
+```
+
+Note that `order()` is slow and it is better to use a trusted stable sorting algorithm implementation such as `Knuthsort` as a reference.
+
+
+## Testing greeNsort
+
+The *greeNsort<sup>&reg;</sup>* package neither uses the official package checking mechanism nor the popular `testthis` mechanism. 
+Most functions in *greeNsort<sup>&reg;</sup>* are somewhat tested by running Examples during package checking (`R CMD check`). 
+For testing the implemented algorithms the *greeNsort<sup>&reg;</sup>* package has regression-test-suites that can be called explicitly. Most use the data generated by `testdb` (double or converted to string), these suites are `testsort()` for sorting algorithms,  `testselect()` for selection algorithms, `testpart()` for partial sorting algorithms. `vtestsort()` tests string sorting algorithms on the data in `vtestdb`. 
+
+The main suite for testing sorting algorithms is `testsort()`, see `?testsort` for the meaning of its parameters. Here a quick example call doing three differently random-seeded replications R, three sample sizes N for two algorithms A on three data patterns D:
+
+```{r}
+testsort(
+  R = 0:2                               # random-number seeds for repetitions
+, N = c(99:101)                         # sample sizes
+, M = c("pointer", "index")             # methods (if available)
+, S = c("insitu", "exsitu")             # situations (if available)
+, A = c('Knuth','Frog1')                # algodb labels
+, D = c('ascall', 'permut', 'descall')  # testdb labels
+, T = 1                                 # thread counts
+, out = ''
+#, verbose = TRUE
+)
+```
+
+The regression testsuite for selection `testpart` applies to algorithms classified as "select" or "SELECT".
+
+```{r}
+algodb[algodb$task %in% c("select","SELECT"), c("label","task")]
+```
+"select" verifies the standard condition that the value of the k-th element is returned, had the data been sorted. "SELECT" additionally verifies that all ties with the k-th element are in their correct position, and that this range is returned correctly. 
+
+```{r}
+testselect(
+  R = 0
+, N = c(99:101)                         # sample sizes
+, S = "insitu"                          # situations (if available)
+, A = c("quick","zack")                 # algodb labels
+, D = c("tielog2","tiesqrt")            # testdb labels
+, out = ""
+#, verbose = TRUE
+)
+```
+
+The regression testsuite for partial sorting `testpart` applies to algorithms classified as "partial" or "PARTIAL". "partial" verifies the standard condition that all elements partially sorted between two positions are in correct position and sorted. "PARTIAL" additionally verifies that the positional range is properly extended to include all ties. The partial sorting algorithms derived from *Zacksort*, *Zucksort* and *Ducksort* can be modified to handle ties properly (and to return the extended range). The current versions do not do this and hence are classified as "partial" like the partial sorting derived from *Quicksort*.
+
+```{r}
+algodb[algodb$task %in% c("partial","PARTIAL"), c("label","task")]
+```
+
+
+
+```{r}
+testpart(
+  R= 0:1
+, N = c(99:101)                         # sample sizes
+, S = "insitu"                          # situations (if available)
+, A = c("quickpt","quickpl","quickpr","zackpt", "zackpl","zackpr")  # algodb labels
+, D = c("tielog2","tiesqrt")            # testdb labels
+, out = ""
+#, verbose = TRUE
+)
+```
+
+
+
+```{r}
+algodb[algodb$task == 'SORT' & algodb$varying , c("label","task")]
+```
+xx text
+
+```{r}
+vtestsort(
+  R = 0:1
+, A = c("VFrog1","WQuick2","UZack")
+, D = c("KW","KWa","KWp")
+, out = ''
+, verbose = TRUE
+)
+```
+
+
+
+
+## Naming conventions
+
+For a sorting algorithm *Foobar* we use uppercase letters to mark specific versions of it:
+
+- *Foobarsort* by default denotes a version mainly using index notation
+- *FoobarsortP* denotes a version using mainly pointer arithmetic 
+- *FoobarsortA* denotes a version tuned for adaptivity to ascending data
+- *FoobarsortB* denotes a version tuned to avoid branch mispredictions
+- *PFoobarsort* denotes a version for parallel execution (pthreads)
+- *SFoobarsort* denotes a version that has been stabilized by breaking ties with a second comparison based on a helper vector of original positions (or pointers). Note that random access is avoided by SWAPping both, elements and helper
+- *VFoobarsort* denotes a version directly sorting variable (string) data
+- *WFoobarsort* denotes a version indirectly sorting variable (string) data by swapping index or pointer elements referring to the data element which remains in its original location. Note that this incurs random access to the data
+- *RFoobarsort* a stabilized variant of *WFoobarsort* breaking ties with a second comparison based on the index or pointer vector
+
+
+## Adding an algorithm
+
+For adding a C algorithm -- assume the name *Foobarsort* -- to the *greeNsort* package, you should make the following code changes: 
+
+### The C-code
+
+Add a file `Foobarsort.c` (perhaps using a headerfile `Foobar.h`). I should include 
+
+```{c, eval=FALSE}
+#include "algo.h"
+#if INSERTIONSORT_LIMIT > 0
+#  include "Insertionsort_l2r.h"
+#endif
+```
+
+and finally define `Foobarsort_insitu` and `Foobarsort_exsitu`. 
+
+### The glue-code
+
+In order to make the C-code available to the package, there is glue-code necessary in the following files
+
+- `greeNsort.h` (declaration of the C-functions)
+- `greeNsort.r.h` (declaration of the Call-interface functions using S-expressions)
+- `greeNsort.r.c` (definition of the Call-interface functions)
+- `init.c` (declaration of access name for dll)
+
+In order to avoid redundant code, `greeNsort.r.c` partially uses pre-processor macros for Call-functions with similar signature.
+Note that each function has two entries in `init.c`, an extern declaration and a name definition including the number of S-expressions. 
+
+### The R-code
+
+All R-callable algorithms are defined in greensort.R . The Function definition should always have `function(x, situation=c("insitu","exsitu"), method=c("index","pointer"))` with the available methods listed even if only one method is available. 
+
+Also above the R-code the roxygen documentation is needed, particularly its `export` directive, otherwise the R-function will not be exported to the `NAMESPACE` file. The roxygen sections as we wrote them use information from the `algodb` documentation object, which is defined further down in the `greeNsort.R` file, which needs a defintion of *Foobar* therein. These definitions are maintained in the file `/inst/docs/algodb.xlsx` and copied from there into `greeNsort.R`. 

@@ -1,0 +1,12 @@
+.Rproj.user
+.Rhistory
+.RData
+.Ruserdata
+inst/ddd
+inst/doc
+/Meta/
+/inst/docs/ExVignettes/
+/inst/docs/Stuff/
+/src/*.o
+/src/*.so
+/invisible_perfbackground.RData

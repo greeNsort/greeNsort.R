@@ -1,0 +1,24 @@
+Package: greeNsort
+Version: 1.0.0
+Date: 2024-01-21
+Title: greeNsort - a companion package for the greeNsort publications
+Author: Jens Oehlschlägel <jens.oehlschlaegel@greensort.org>
+Maintainer: Jens Oehlschlägel <jens.oehlschlaegel@greensort.org>
+Depends: R (>= 4.3.0), greeNsort.Rcpp (>= 1.0.0)
+Imports: Rcpp, tibble, RhpcBLASctl, utils, stats, abind, gplots, rstudioapi
+Suggests:
+    MASS,
+    knitr,
+    rmarkdown, 
+    roxygen2,
+    parallel,
+    rTRNG
+Description: Functions for timing a multitude of sorting algorithms. Note that these are optimized for measuerment and comparison, not for production use.
+License: file LICENSE
+Copyright: Dr. Jens Oehlschlägel
+LazyLoad: yes
+ByteCompile: yes
+Encoding: UTF-8
+URL: http://github.com/greensort, http://www.greensort.org
+VignetteBuilder: knitr
+RoxygenNote: 7.2.3

@@ -1,0 +1,947 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+<meta name="author" content="Dr. Jens Oehlschlägel" />
+
+
+<title>greeNsort-2-measurement</title>
+
+<script>// Pandoc 2.9 adds attributes on both header and div. We remove the former (to
+// be compatible with the behavior of Pandoc < 2.8).
+document.addEventListener('DOMContentLoaded', function(e) {
+  var hs = document.querySelectorAll("div.section[class*='level'] > :first-child");
+  var i, h, a;
+  for (i = 0; i < hs.length; i++) {
+    h = hs[i];
+    if (!/^h[1-6]$/i.test(h.tagName)) continue;  // it should be a header h1-h6
+    a = h.attributes;
+    while (a.length > 0) h.removeAttribute(a[0].name);
+  }
+});
+</script>
+
+<style type="text/css">
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+span.underline{text-decoration: underline;}
+div.column{display: inline-block; vertical-align: top; width: 50%;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+</style>
+
+
+
+<style type="text/css">
+code {
+white-space: pre;
+}
+.sourceCode {
+overflow: visible;
+}
+</style>
+<style type="text/css" data-origin="pandoc">
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+{ counter-reset: source-line 0; }
+pre.numberSource code > span
+{ position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+{ content: counter(source-line);
+position: relative; left: -1em; text-align: right; vertical-align: baseline;
+border: none; display: inline-block;
+-webkit-touch-callout: none; -webkit-user-select: none;
+-khtml-user-select: none; -moz-user-select: none;
+-ms-user-select: none; user-select: none;
+padding: 0 4px; width: 4em;
+color: #aaaaaa;
+}
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa; padding-left: 4px; }
+div.sourceCode
+{ }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } 
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.at { color: #7d9029; } 
+code span.bn { color: #40a070; } 
+code span.bu { color: #008000; } 
+code span.cf { color: #007020; font-weight: bold; } 
+code span.ch { color: #4070a0; } 
+code span.cn { color: #880000; } 
+code span.co { color: #60a0b0; font-style: italic; } 
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.do { color: #ba2121; font-style: italic; } 
+code span.dt { color: #902000; } 
+code span.dv { color: #40a070; } 
+code span.er { color: #ff0000; font-weight: bold; } 
+code span.ex { } 
+code span.fl { color: #40a070; } 
+code span.fu { color: #06287e; } 
+code span.im { color: #008000; font-weight: bold; } 
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.kw { color: #007020; font-weight: bold; } 
+code span.op { color: #666666; } 
+code span.ot { color: #007020; } 
+code span.pp { color: #bc7a00; } 
+code span.sc { color: #4070a0; } 
+code span.ss { color: #bb6688; } 
+code span.st { color: #4070a0; } 
+code span.va { color: #19177c; } 
+code span.vs { color: #4070a0; } 
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } 
+</style>
+<script>
+// apply pandoc div.sourceCode style to pre.sourceCode instead
+(function() {
+  var sheets = document.styleSheets;
+  for (var i = 0; i < sheets.length; i++) {
+    if (sheets[i].ownerNode.dataset["origin"] !== "pandoc") continue;
+    try { var rules = sheets[i].cssRules; } catch (e) { continue; }
+    var j = 0;
+    while (j < rules.length) {
+      var rule = rules[j];
+      // check if there is a div.sourceCode rule
+      if (rule.type !== rule.STYLE_RULE || rule.selectorText !== "div.sourceCode") {
+        j++;
+        continue;
+      }
+      var style = rule.style.cssText;
+      // check if color or background-color is set
+      if (rule.style.color === '' && rule.style.backgroundColor === '') {
+        j++;
+        continue;
+      }
+      // replace div.sourceCode by a pre.sourceCode rule
+      sheets[i].deleteRule(j);
+      sheets[i].insertRule('pre.sourceCode{' + style + '}', j);
+    }
+  }
+})();
+</script>
+
+
+
+
+<style type="text/css">body {
+background-color: #fff;
+margin: 1em auto;
+max-width: 700px;
+overflow: visible;
+padding-left: 2em;
+padding-right: 2em;
+font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+font-size: 14px;
+line-height: 1.35;
+}
+#TOC {
+clear: both;
+margin: 0 0 10px 10px;
+padding: 4px;
+width: 400px;
+border: 1px solid #CCCCCC;
+border-radius: 5px;
+background-color: #f6f6f6;
+font-size: 13px;
+line-height: 1.3;
+}
+#TOC .toctitle {
+font-weight: bold;
+font-size: 15px;
+margin-left: 5px;
+}
+#TOC ul {
+padding-left: 40px;
+margin-left: -1.5em;
+margin-top: 5px;
+margin-bottom: 5px;
+}
+#TOC ul ul {
+margin-left: -2em;
+}
+#TOC li {
+line-height: 16px;
+}
+table {
+margin: 1em auto;
+border-width: 1px;
+border-color: #DDDDDD;
+border-style: outset;
+border-collapse: collapse;
+}
+table th {
+border-width: 2px;
+padding: 5px;
+border-style: inset;
+}
+table td {
+border-width: 1px;
+border-style: inset;
+line-height: 18px;
+padding: 5px 5px;
+}
+table, table th, table td {
+border-left-style: none;
+border-right-style: none;
+}
+table thead, table tr.even {
+background-color: #f7f7f7;
+}
+p {
+margin: 0.5em 0;
+}
+blockquote {
+background-color: #f6f6f6;
+padding: 0.25em 0.75em;
+}
+hr {
+border-style: solid;
+border: none;
+border-top: 1px solid #777;
+margin: 28px 0;
+}
+dl {
+margin-left: 0;
+}
+dl dd {
+margin-bottom: 13px;
+margin-left: 13px;
+}
+dl dt {
+font-weight: bold;
+}
+ul {
+margin-top: 0;
+}
+ul li {
+list-style: circle outside;
+}
+ul ul {
+margin-bottom: 0;
+}
+pre, code {
+background-color: #f7f7f7;
+border-radius: 3px;
+color: #333;
+white-space: pre-wrap; 
+}
+pre {
+border-radius: 3px;
+margin: 5px 0px 10px 0px;
+padding: 10px;
+}
+pre:not([class]) {
+background-color: #f7f7f7;
+}
+code {
+font-family: Consolas, Monaco, 'Courier New', monospace;
+font-size: 85%;
+}
+p > code, li > code {
+padding: 2px 0px;
+}
+div.figure {
+text-align: center;
+}
+img {
+background-color: #FFFFFF;
+padding: 2px;
+border: 1px solid #DDDDDD;
+border-radius: 3px;
+border: 1px solid #CCCCCC;
+margin: 0 5px;
+}
+h1 {
+margin-top: 0;
+font-size: 35px;
+line-height: 40px;
+}
+h2 {
+border-bottom: 4px solid #f7f7f7;
+padding-top: 10px;
+padding-bottom: 2px;
+font-size: 145%;
+}
+h3 {
+border-bottom: 2px solid #f7f7f7;
+padding-top: 10px;
+font-size: 120%;
+}
+h4 {
+border-bottom: 1px solid #f7f7f7;
+margin-left: 8px;
+font-size: 105%;
+}
+h5, h6 {
+border-bottom: 1px solid #ccc;
+font-size: 105%;
+}
+a {
+color: #0033dd;
+text-decoration: none;
+}
+a:hover {
+color: #6666ff; }
+a:visited {
+color: #800080; }
+a:visited:hover {
+color: #BB00BB; }
+a[href^="http:"] {
+text-decoration: underline; }
+a[href^="https:"] {
+text-decoration: underline; }
+
+code > span.kw { color: #555; font-weight: bold; } 
+code > span.dt { color: #902000; } 
+code > span.dv { color: #40a070; } 
+code > span.bn { color: #d14; } 
+code > span.fl { color: #d14; } 
+code > span.ch { color: #d14; } 
+code > span.st { color: #d14; } 
+code > span.co { color: #888888; font-style: italic; } 
+code > span.ot { color: #007020; } 
+code > span.al { color: #ff0000; font-weight: bold; } 
+code > span.fu { color: #900; font-weight: bold; } 
+code > span.er { color: #a61717; background-color: #e3d2d2; } 
+</style>
+
+
+
+
+</head>
+
+<body>
+
+
+
+
+<h1 class="title toc-ignore">greeNsort-2-measurement</h1>
+<h4 class="author">Dr. Jens Oehlschlägel</h4>
+
+
+<div id="TOC">
+<ul>
+<li><a href="#intro" id="toc-intro">Intro</a></li>
+<li><a href="#number-of-cores" id="toc-number-of-cores">Number of
+cores</a></li>
+<li><a href="#rapl-configuration" id="toc-rapl-configuration">RAPL
+configuration</a></li>
+<li><a href="#rapl-grants" id="toc-rapl-grants">RAPL grants</a></li>
+<li><a href="#r-measurement" id="toc-r-measurement">R
+measurement</a></li>
+<li><a href="#monitoring" id="toc-monitoring">Monitoring</a></li>
+<li><a href="#idle-measurement" id="toc-idle-measurement">Idle
+measurement</a></li>
+<li><a href="#measurement-of-an-algorithm" id="toc-measurement-of-an-algorithm">Measurement of an
+algorithm</a></li>
+<li><a href="#comparing-two-algorithms" id="toc-comparing-two-algorithms">Comparing two algorithms</a></li>
+<li><a href="#kpis-with-perf" id="toc-kpis-with-perf">KPIs with
+perf</a></li>
+<li><a href="#energy-kpis" id="toc-energy-kpis">Energy KPIs</a></li>
+<li><a href="#calibrating-energy" id="toc-calibrating-energy">Calibrating Energy</a></li>
+<li><a href="#time-kpis" id="toc-time-kpis">Time KPIs</a></li>
+<li><a href="#footprint-kpis" id="toc-footprint-kpis">Footprint
+KPIs</a></li>
+<li><a href="#kpi-labels" id="toc-kpi-labels">KPI labels</a></li>
+<li><a href="#other-measurement-methods" id="toc-other-measurement-methods">Other Measurement Methods</a></li>
+</ul>
+</div>
+
+<div id="intro" class="section level2">
+<h2>Intro</h2>
+<p>This Vignette guides you through the measurement capabilities of the
+greeNsort package. We assume you went through the <a href="greeNsort-quickstart.html"><em>greeNsort-quickstart</em></a>
+vignette, your package is properly configured, compiled and you have
+granted access to the powercap RAPL counters.</p>
+<p>The <em>greeNsort</em> Rpackage directly reads from the powercap RAPL
+counters using simple custom code. RAPL measures the energy of the
+socket, not of a program, a process or a thread. Hence it is important
+to minimize or standardize competing load on the same machine. Note that
+RStudio itself is multithreaded, hence measurements done from a simple R
+console minimize error variance. Note further that RAPL on Intel
+provides some separation of base and core load (but not AMD), and that
+the greeNsort package provides support for calibration to (standardized)
+background load.</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(greeNsort)</span></code></pre></div>
+</div>
+<div id="number-of-cores" class="section level2">
+<h2>Number of cores</h2>
+<p>Function <code>perfcores</code> diagnoses the number of cores of your
+machine:</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">c</span>(<span class="at">logical=</span><span class="fu">perfcores</span>(), <span class="at">physical=</span><span class="fu">perfcores</span>(<span class="at">logical=</span><span class="cn">FALSE</span>))</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  logical physical </span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;       16        8</span></span></code></pre></div>
+</div>
+<div id="rapl-configuration" class="section level2">
+<h2>RAPL configuration</h2>
+<p>Function <code>perfmachine</code> returns the powercap RAPL paths
+found on your machine, it tests four components <code>package</code>,
+<code>core</code>, <code>uncore</code> and <code>dram</code>. Absent
+paths are returned as <code>NA</code>:</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">perfmachine</span>()</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; </span><span class="al">NOTE</span><span class="co">: powercap path /sys/class/powercap/intel-rapl/intel-rapl:0/intel-rapl:0:1/ set to NA</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; </span><span class="al">NOTE</span><span class="co">: powercap path /sys/class/powercap/intel-rapl/intel-rapl:0/intel-rapl:0:2/ set to NA</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;                                                       package </span></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;                &quot;/sys/class/powercap/intel-rapl/intel-rapl:0/&quot; </span></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;                                                          core </span></span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; &quot;/sys/class/powercap/intel-rapl/intel-rapl:0/intel-rapl:0:0/&quot; </span></span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;                                                        uncore </span></span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;                                                            NA </span></span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;                                                          dram </span></span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;                                                            NA</span></span></code></pre></div>
+<p>Function <code>perfcompiled</code> returns the RAPL paths found
+compiled into the greeNsort package , it returns four components
+<code>package</code>, <code>core</code>, <code>uncore</code> and
+<code>dram</code>. Absent paths are returned as <code>NA</code>:</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="fu">perfcompiled</span>()</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;                                                       package </span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;                &quot;/sys/class/powercap/intel-rapl/intel-rapl:0/&quot; </span></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;                                                          core </span></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; &quot;/sys/class/powercap/intel-rapl/intel-rapl:0/intel-rapl:0:0/&quot; </span></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;                                                        uncore </span></span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;                                                            NA </span></span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;                                                          dram </span></span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;                                                            NA</span></span></code></pre></div>
+<p>Function <code>perfcheck</code> compares the RAPL paths on your
+machine with those compiled into the greeNsort package, it returns
+<code>TRUE</code> if they match, otherwise <code>FALSE</code>:</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu">perfcheck</span>()</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; </span><span class="al">NOTE</span><span class="co">: powercap path /sys/class/powercap/intel-rapl/intel-rapl:0/intel-rapl:0:1/ set to NA</span></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; </span><span class="al">NOTE</span><span class="co">: powercap path /sys/class/powercap/intel-rapl/intel-rapl:0/intel-rapl:0:2/ set to NA</span></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [1] TRUE</span></span></code></pre></div>
+<p>Function <code>perfconfig</code> writes the paths found on your
+machine to <code>src/powercap_config.h</code> to prepare recompilation
+of the package.</p>
+<pre><code>perfconfig()</code></pre>
+</div>
+<div id="rapl-grants" class="section level2">
+<h2>RAPL grants</h2>
+<p>Function <code>perfgrants</code> asks for the root password and
+grants read access to the RAPL paths.</p>
+<pre><code>perfgrants()</code></pre>
+</div>
+<div id="r-measurement" class="section level2">
+<h2>R measurement</h2>
+<p>Here we describe a generic interface which allows to measure
+<em>any</em> task from within R. Note that this measures C-costs
+together with the costs of the R interpreter overhead. The
+<em>greeNsort<sup>®</sup></em> algorithms are measured without R
+overhead directly in the R/C glue-code.</p>
+<p>Function <code>perfmax</code> returns the maximum RAPL counter values
+(and Inf for a timer)</p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="fu">perfmax</span>()</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;     time  package     core   uncore     dram </span></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;      Inf 65532.61 65532.61     0.00     0.00</span></span></code></pre></div>
+<p>Function <code>perfnow</code> returns the current RAPL counter values
+(and a timer value). The RAPL counters count from <code>0</code> to
+<code>perfmax</code> and then wraps around at counter overflow. The
+greeNsort package functions cope with a one-time overflow during the
+measurement period. This implies that the size of a task that can be
+measured is limited.</p>
+<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="fu">perfnow</span>()</span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;       time    package       core     uncore       dram </span></span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;   144.8740 14438.4788   578.7446     0.0000     0.0000</span></span></code></pre></div>
+<p>Note that the RAPL package measurement is a total which contains
+<code>core</code>, <code>uncore</code> and the basic energy consumption
+of the socket.</p>
+<p>Function <code>perfthen</code> takes an earlier <code>perfnow</code>
+start measurement as input, reads the counters and returns decomposed
+results in the same structure as <code>retperf()</code>, where
+<code>base = package - core - uncore</code> and
+<code>unco = uncore</code>:</p>
+<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="fu">invisible</span>(<span class="fu">prunif</span>(<span class="dv">32</span>))  <span class="do">## dummy call to load prunif </span></span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>n <span class="ot">&lt;-</span> <span class="fl">1e7</span></span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>p <span class="ot">&lt;-</span> <span class="fu">perfnow</span>()</span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a><span class="fu">invisible</span>(<span class="fu">sample</span>(n))</span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a>s <span class="ot">&lt;-</span> <span class="fu">perfthen</span>(p, <span class="st">&#39;runif&#39;</span>)</span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a>p <span class="ot">&lt;-</span> <span class="fu">perfnow</span>()</span>
+<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a><span class="fu">invisible</span>(<span class="fu">runif</span>(n))</span>
+<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a>r <span class="ot">&lt;-</span> <span class="fu">perfthen</span>(p, <span class="st">&#39;runif&#39;</span>)</span>
+<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a>p <span class="ot">&lt;-</span> <span class="fu">perfnow</span>()</span>
+<span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a><span class="fu">invisible</span>(<span class="fu">prunif</span>(n))</span>
+<span id="cb10-11"><a href="#cb10-11" aria-hidden="true" tabindex="-1"></a>pr <span class="ot">&lt;-</span> <span class="fu">perfthen</span>(p, <span class="st">&#39;prunif&#39;</span>)</span>
+<span id="cb10-12"><a href="#cb10-12" aria-hidden="true" tabindex="-1"></a><span class="fu">rbind</span>(s, r, pr)</span>
+<span id="cb10-13"><a href="#cb10-13" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;         n b p t size  secs      base     core unco dram</span></span>
+<span id="cb10-14"><a href="#cb10-14" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; runif  NA 8 1 1   NA 1.436 31.888336 1.504042    0    0</span></span>
+<span id="cb10-15"><a href="#cb10-15" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; runif  NA 8 1 1   NA 0.082  2.094252 0.117166    0    0</span></span>
+<span id="cb10-16"><a href="#cb10-16" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; prunif NA 8 1 1   NA 0.059  1.424823 0.084987    0    0</span></span></code></pre></div>
+<ul>
+<li><code>dram</code> is the energy of the RAM in Joule (zero under
+AMD), the other three components are related to processing</li>
+<li><code>base</code> is the Joules of the CPU not attributed to
+processing cores. Note that under AMD base increases significantly with
+load and hence must not be ignored</li>
+<li><code>core</code> is the Joules of the CPU attributed to processing
+cores.</li>
+<li><code>unco</code> (uncore) is the remaining Joules of the socket,
+typically of the GPU (or zero under AMD)</li>
+</ul>
+<p>Note that the exact timing behaviour of the counter is undefined,
+hence for very short measurements <code>core</code> can increase without
+an increase of <code>package</code>, hence <code>base</code> can be
+negative. This is implies that this setup is not suitable for exact
+measurement of single very short code sections<a href="#fn1" class="footnote-ref" id="fnref1"><sup>1</sup></a>, however, short code
+sections can still be measured via multiple measurements and statistical
+evaluation.</p>
+</div>
+<div id="monitoring" class="section level2">
+<h2>Monitoring</h2>
+<p>Function <code>perfmon</code> allows simple energy monitoring of the
+machine, hence can be used to observe the energy consumption of other
+applications. <code>perfmon</code> first creates a baseline idle
+measurement during <code>refsec</code> seconds, then monitors for
+<code>maxsec</code> seconds in interval of <code>monsec</code>
+seconds.</p>
+<div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="fu">perfmon</span>(<span class="at">refsec =</span> <span class="dv">3</span>, <span class="at">monsec=</span><span class="dv">1</span>, <span class="at">maxsec =</span> <span class="dv">3</span>)</span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;           time package core uncore dram</span></span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; curr/max     0      22    1    NaN  NaN</span></span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; diff/base  100     124   63    NaN  NaN</span></span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;           time package core uncore dram</span></span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; curr/max     0      22    1    NaN  NaN</span></span>
+<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; diff/base  100     106  100    NaN  NaN</span></span>
+<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;           time package core uncore dram</span></span>
+<span id="cb11-9"><a href="#cb11-9" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; curr/max     0      22    1    NaN  NaN</span></span>
+<span id="cb11-10"><a href="#cb11-10" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; diff/base  100      66   89    NaN  NaN</span></span></code></pre></div>
+<p>The output is given a percentage relative to the baseline.</p>
+<p>Now run <code>perfmon(refsec = 10)</code>, you can interrupt at any
+time. Don’t do anything during the baseline phase, then check the
+influence of moving your mouse, opening a browser, etc.</p>
+</div>
+<div id="idle-measurement" class="section level2">
+<h2>Idle measurement</h2>
+<p>We mentioned above that the <em>greeNsort<sup>®</sup></em> algorithms
+are measured without R overhead directly in the R/C glue-code. The
+internal C-call returns with an attribute <code>perf</code> which is fed
+through <code>retperf</code> for standardization of names.</p>
+<p>Function <code>perfsleep(x)</code> measures for <code>x</code>
+seconds while the process sleeps.</p>
+<div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>i <span class="ot">&lt;-</span> <span class="fu">perfsleep</span>(<span class="dv">5</span>)</span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>i</span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;           n b p t size     secs     base     core unco dram</span></span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; perfsleep 5 0 0 0    0 5.000075 87.25469 3.477985    0    0</span></span></code></pre></div>
+</div>
+<div id="measurement-of-an-algorithm" class="section level2">
+<h2>Measurement of an algorithm</h2>
+<p>Now let’s create a dataset and measure the reference algorithm
+<em>Knuthsort</em>:</p>
+<div class="sourceCode" id="cb13"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>x <span class="ot">&lt;-</span> <span class="fu">runif</span>(<span class="fl">1e6</span>)    <span class="do">## a vector with 1e6 uniform random numbers</span></span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a><span class="fu">Knuthsort</span>(x)</span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;               n b p t size       secs     base     core unco dram</span></span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Knuthsort 1e+06 8 1 1    2 0.07389763 1.894067 0.480947    0    0</span></span></code></pre></div>
+<p>Note that unlike the tradition in R this call sorts its input x and
+returns a raw measurement which autoprints.</p>
+<p><code>n</code> gives us the number of elements of the input data.
+<code>b</code> gives us the number of bytes per element (8 for
+double).</p>
+<p>Huge vectors with uniform random numbers can be created sorted faster
+in parallel</p>
+<div class="sourceCode" id="cb14"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>x <span class="ot">&lt;-</span> <span class="fu">prunif</span>(<span class="fl">1e8</span>)</span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a><span class="fu">PKnuthsort</span>(x)</span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;                n b p  t size     secs     base     core unco dram</span></span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; PKnuthsort 1e+08 8 1 16    2 1.313206 55.21155 5.523732    0    0</span></span></code></pre></div>
+<p><code>p</code> gives us the number of processes used (always 1 unless
+we tell otherwise). <code>t</code> gives us the number of threads used
+(depends on your machine, see <code>perfcores</code>)</p>
+</div>
+<div id="comparing-two-algorithms" class="section level2">
+<h2>Comparing two algorithms</h2>
+<p>Scientists know that measurements have error variance. Smaller short
+running tasks are much more at risk for disturbance by random events on
+your machine than bigger ones, hence for simple comparisons of single
+measurements it is recommended to use rather large tasks. Let’s
+demonstrate this by calculating the coefficient of variation for small
+and large tasks with 50 measurements each:</p>
+<div class="sourceCode" id="cb15"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>f <span class="ot">&lt;-</span> <span class="cf">function</span>(n){x <span class="ot">&lt;-</span> <span class="fu">runif</span>(n); <span class="fu">secs</span>(<span class="fu">Quicksort2</span>(x))}</span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>s <span class="ot">&lt;-</span> <span class="fu">sapply</span>(<span class="fu">rep</span>(<span class="dv">1000</span>, <span class="dv">50</span>), f); vs <span class="ot">&lt;-</span> <span class="fu">sd</span>(s)<span class="sc">/</span><span class="fu">mean</span>(s)</span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>l <span class="ot">&lt;-</span> <span class="fu">sapply</span>(<span class="fu">rep</span>(<span class="dv">1000000</span>, <span class="dv">50</span>), f); vl <span class="ot">&lt;-</span> <span class="fu">sd</span>(l)<span class="sc">/</span><span class="fu">mean</span>(l)</span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a><span class="fu">c</span>(<span class="at">small=</span>vs, <span class="at">large=</span>vl, <span class="at">ratio=</span>vs<span class="sc">/</span>vl)</span>
+<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;      small      large      ratio </span></span>
+<span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 0.09369273 0.04359658 2.14908449</span></span></code></pre></div>
+<p>Now let’s do a simple (big) comparison between the
+<em>greeNsort<sup>®</sup></em> algorithm <em>Frogsort2</em> and the
+reference algorithm <em>Knuthsort</em>:</p>
+<div class="sourceCode" id="cb16"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>x <span class="ot">&lt;-</span> <span class="fu">prunif</span>(<span class="dv">2</span><span class="sc">^</span><span class="dv">25</span>)</span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>y <span class="ot">&lt;-</span> x[]  <span class="do">## now we have two identical copies of the data</span></span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>k <span class="ot">&lt;-</span> <span class="fu">Knuthsort</span>(x)</span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a>f <span class="ot">&lt;-</span> <span class="fu">Frogsort2</span>(y)</span>
+<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a>e <span class="ot">&lt;-</span> <span class="fu">rbind</span>(k, f)</span>
+<span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a><span class="fu">rbind</span>(e, <span class="at">Ratio=</span>e[<span class="st">&quot;Knuthsort&quot;</span>,]<span class="sc">/</span>e[<span class="st">&quot;Frogsort2&quot;</span>,])</span>
+<span id="cb16-7"><a href="#cb16-7" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;                  n b p t     size     secs      base     core unco dram</span></span>
+<span id="cb16-8"><a href="#cb16-8" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Knuthsort 33554432 8 1 1 2.000000 3.017062 98.708502 6.897654    0    0</span></span>
+<span id="cb16-9"><a href="#cb16-9" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Frogsort2 33554432 8 1 1 1.142857 2.457132 73.952413 2.132626    0    0</span></span>
+<span id="cb16-10"><a href="#cb16-10" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Ratio            1 1 1 1 1.750000 1.227879  1.334757 3.234348  NaN  NaN</span></span></code></pre></div>
+<p><code>size=2</code> says that <em>Knuthsort</em> needs 200% RAM
+relative to its data size, i.e. 100 %buffer. <em>Frogsort2</em> needs
+14% buffer (can be changed, see <code>?Frogsort2</code>). Hence
+<em>Frogsort2</em> needs 57% of the RAM of <em>Knuthsort</em>, and at
+the same time only 74% of the runTime. Note the non-adjusted extractor
+functions:</p>
+<div class="sourceCode" id="cb17"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="fu">cbind</span>(</span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">size</span>(f)</span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a>, <span class="fu">secs</span>(f)</span>
+<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a>, <span class="fu">sizesecs</span>(f)</span>
+<span id="cb17-5"><a href="#cb17-5" aria-hidden="true" tabindex="-1"></a>, <span class="fu">base</span>(f)</span>
+<span id="cb17-6"><a href="#cb17-6" aria-hidden="true" tabindex="-1"></a>, <span class="fu">core</span>(f)</span>
+<span id="cb17-7"><a href="#cb17-7" aria-hidden="true" tabindex="-1"></a>, <span class="fu">unco</span>(f)</span>
+<span id="cb17-8"><a href="#cb17-8" aria-hidden="true" tabindex="-1"></a>, <span class="fu">dram</span>(f)</span>
+<span id="cb17-9"><a href="#cb17-9" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb17-10"><a href="#cb17-10" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;               %RAM  runTime tFootprint     base     core     unco dram</span></span>
+<span id="cb17-11"><a href="#cb17-11" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Frogsort2 1.142857 2.457132   2.808151 73.95241 2.132626 2.132626    0</span></span></code></pre></div>
+</div>
+<div id="kpis-with-perf" class="section level2">
+<h2>KPIs with perf</h2>
+<p>Function <code>perf</code> returns the most important KPIs</p>
+<div class="sourceCode" id="cb18"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>pe <span class="ot">&lt;-</span> <span class="fu">perf</span>(e)</span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a><span class="fu">rbind</span>(pe, <span class="at">Ratio=</span>pe[<span class="dv">1</span>,]<span class="sc">/</span>pe[<span class="dv">2</span>,])</span>
+<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;               %RAM  runTime lifeTime  cpuTime   bEnergy cdEnergy  bcdEnergy</span></span>
+<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Knuthsort 2.000000 3.017062 3.017062 3.017062 98.708502 6.897654 105.606156</span></span>
+<span id="cb18-5"><a href="#cb18-5" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Frogsort2 1.142857 2.457132 2.457132 2.457132 73.952413 2.132626  76.085039</span></span>
+<span id="cb18-6"><a href="#cb18-6" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Ratio     1.750000 1.227879 1.227879 1.227879  1.334757 3.234348   1.388002</span></span>
+<span id="cb18-7"><a href="#cb18-7" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;           pcdEnergy cdFootprint bcdFootprint pcdFootprint tFootprint</span></span>
+<span id="cb18-8"><a href="#cb18-8" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Knuthsort 19.236217   13.795308   211.212312    38.472434   6.034124</span></span>
+<span id="cb18-9"><a href="#cb18-9" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Frogsort2 11.376678    2.437287    86.954330    13.001917   2.808151</span></span>
+<span id="cb18-10"><a href="#cb18-10" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Ratio      1.690847    5.660108     2.429003     2.958982   2.148789</span></span></code></pre></div>
+<p>Note that the KPI calculation functions that <code>perf</code> calls
+don’t know that the Ratio row does not contain absolute measurements.
+Hence for a ratio the energy evaluations we need to use
+<code>perf(f) / perf(k)</code> instead of <code>perf(k/f)</code>. While
+<code>perf</code> is easy to use, there is quite an amount of logic
+behind the KPIs in <code>perf</code>, which is explained in the
+following sections.</p>
+</div>
+<div id="energy-kpis" class="section level2">
+<h2>Energy KPIs</h2>
+<p>If you don’t want to dive into the subtleties of energy-measurement,
+simply use <code>bcdEnergy</code> for comparing Energy measurements.
+Which energy components should we use? Let’s abbreviate the Energy
+components:</p>
+<ul>
+<li><code>b=base</code></li>
+<li><code>c=core</code></li>
+<li><code>d=dram</code></li>
+<li><code>u=unco</code></li>
+</ul>
+<p>Assuming so far, that we don’t use the GPU for sorting,
+<code>unco</code> is rather error variance. By adding certain
+combinations of <code>b,c,d</code> we get energy measurements which are
+useful for evaluation in certain situations. You see all of them by
+calling the convenience function <code>aEnergy</code>:</p>
+<div class="sourceCode" id="cb19"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="fu">aEnergy</span>(e)</span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;            bEnergy  cEnergy dEnergy cdEnergy pcdEnergy bcdEnergy</span></span>
+<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Knuthsort 98.70850 6.897654       0 6.897654  19.23622 105.60616</span></span>
+<span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Frogsort2 73.95241 2.132626       0 2.132626  11.37668  76.08504</span></span></code></pre></div>
+<p>On AMD the only meaningful choice seems to be <code>bcdEnergy</code>
+because <code>base</code> and <code>core</code> are not properly
+separated (and <code>dram</code> is not measured, hence zero).</p>
+<p>On Intel, with a relatively reliable separation of <code>base</code>
+and <code>core</code> and a reported <code>dram</code> component, we
+have more possibilities. We can drop the <code>base</code> component and
+only look at <code>cdEnergy</code> or even only use <code>bEnergy</code>
+ignoring the RAM energy.</p>
+<p>There is an alternative to adding the <code>base</code> components
+either completely or not at all: assigning a part of <code>base</code>
+proportional to the share of cores used to all available cores, this is
+what <code>pcdEnergy</code> does. Depending on context, all of these
+have justified applications</p>
+<ul>
+<li><code>cEnergy</code> and <code>cdEnergy</code> gives a measurement
+for the extra energy needed for the task on a machine running 24/7 with
+little load, e.g. a home-server, where the <code>base</code> energy will
+be expensed regardless of algorithm efficiency.</li>
+<li><code>pcdEnergy</code> gives a fair measurement of the total Energy
+needed for the task on a multi-user server which is sized to run at full
+throughput.</li>
+<li><code>bcdEnergy</code> gives a fair measurement of the total Energy
+needed for the task on a single-user machine such as a notebook which is
+only running until work is done.</li>
+</ul>
+</div>
+<div id="calibrating-energy" class="section level2">
+<h2>Calibrating Energy</h2>
+<p>The attentive reader will have noticed, that the <code>core</code>
+energy of the idle-measurement was above zero, because several services
+are running in the background. This suggests to treat <code>cd</code>
+during idle as <code>base</code>. <em>greeNsort<sup>®</sup></em>
+provides a set of functions for measuring, predicting and calibrating
+background activities.</p>
+<p>A proper calibration measurement needs a lots of samples including
+long ones. Here we just do a quick example:</p>
+<div class="sourceCode" id="cb20"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="fu">perfcalibrate</span>(<span class="dv">3</span>, <span class="at">minsec =</span> <span class="dv">2</span>, <span class="at">maxsec =</span> <span class="dv">2</span>, <span class="at">save=</span><span class="cn">FALSE</span>)</span></code></pre></div>
+<p><img src="data:image/png;base64,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" /><!-- --></p>
+<p>Take 5 minutes to calibrate your machine thoroughly and save the
+result as <code>perfbackground.RData</code> in the current directory
+(<code>getwd()</code>).</p>
+<pre><code>perfcalibrate(50, minsec = 0, maxsec = 12, save=TRUE)</code></pre>
+<p><code>perfcalibrate()</code> has created idle measurements and fitted
+models that predict <code>bcd</code> from ‘secs’. This is stored as an
+environment <code>.perfbackground</code> in-RAM in the global
+environment (and optionally in a file
+<code>perfbackground.RData</code>).</p>
+<div class="sourceCode" id="cb22"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a>.perfbackground</span>
+<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; &lt;environment: 0x55d4ce774050&gt;</span></span></code></pre></div>
+<p>A couple of extractor functions modifies measurement data:</p>
+<ul>
+<li><code>rawperf</code> returns the data unmodified</li>
+<li><code>bacperf</code> returns uses <code>.perfbackground</code> to
+create background predictions based on <code>secs</code> of its
+input</li>
+<li><code>difperf</code> returns <code>rawperf</code> minus
+<code>bacperf</code></li>
+<li><code>adjperf</code> returns <code>core</code> and <code>dram</code>
+minus their background values and add this to <code>base</code></li>
+<li><code>amdperf</code> adds <code>base</code> to <code>core</code> in
+background and measurement before applying the adjustments of
+<code>adjperf</code></li>
+<li><code>optperf</code> returns one of <code>rawperf</code>,
+<code>diffperf</code>, <code>adjperf</code> or <code>amdperf</code>
+depending on R option
+<code>getOption(&quot;greensort_perf_calc&quot;, default=&quot;raw&quot;)</code></li>
+</ul>
+<div class="sourceCode" id="cb23"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="fu">options</span>(<span class="at">greensort_perf_calc=</span> <span class="st">&quot;raw&quot;</span>)</span>
+<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a>r <span class="ot">&lt;-</span> <span class="fu">rbind</span>(</span>
+<span id="cb23-3"><a href="#cb23-3" aria-hidden="true" tabindex="-1"></a>  f</span>
+<span id="cb23-4"><a href="#cb23-4" aria-hidden="true" tabindex="-1"></a>, <span class="fu">rawperf</span>(f)</span>
+<span id="cb23-5"><a href="#cb23-5" aria-hidden="true" tabindex="-1"></a>, <span class="fu">bacperf</span>(f)</span>
+<span id="cb23-6"><a href="#cb23-6" aria-hidden="true" tabindex="-1"></a>, <span class="fu">difperf</span>(f)</span>
+<span id="cb23-7"><a href="#cb23-7" aria-hidden="true" tabindex="-1"></a>, <span class="fu">adjperf</span>(f)</span>
+<span id="cb23-8"><a href="#cb23-8" aria-hidden="true" tabindex="-1"></a>, <span class="fu">amdperf</span>(f)</span>
+<span id="cb23-9"><a href="#cb23-9" aria-hidden="true" tabindex="-1"></a>, <span class="fu">optperf</span>(f)</span>
+<span id="cb23-10"><a href="#cb23-10" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb23-11"><a href="#cb23-11" aria-hidden="true" tabindex="-1"></a><span class="fu">rownames</span>(r)[<span class="sc">-</span><span class="dv">1</span>] <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">&quot;raw&quot;</span>,<span class="st">&quot;bac&quot;</span>,<span class="st">&quot;dif&quot;</span>,<span class="st">&quot;adj&quot;</span>,<span class="st">&quot;amd&quot;</span>,<span class="st">&quot;opt&quot;</span>)</span>
+<span id="cb23-12"><a href="#cb23-12" aria-hidden="true" tabindex="-1"></a>r</span>
+<span id="cb23-13"><a href="#cb23-13" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;                  n b p t     size     secs     base       core unco dram</span></span>
+<span id="cb23-14"><a href="#cb23-14" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Frogsort2 33554432 8 1 1 1.142857 2.457132 73.95241  2.1326260    0    0</span></span>
+<span id="cb23-15"><a href="#cb23-15" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; raw       33554432 8 1 1 1.142857 2.457132 73.95241  2.1326260    0    0</span></span>
+<span id="cb23-16"><a href="#cb23-16" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; bac       33554432 8 1 1 1.142857 2.457132 35.09842  1.2511237    0    0</span></span>
+<span id="cb23-17"><a href="#cb23-17" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; dif       33554432 8 1 1 1.142857 2.457132 38.85399  0.8815023    0    0</span></span>
+<span id="cb23-18"><a href="#cb23-18" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; adj       33554432 8 1 1 1.142857 2.457132 75.20354  0.8815023    0    0</span></span>
+<span id="cb23-19"><a href="#cb23-19" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; amd       33554432 8 1 1 1.142857 2.457132 36.34955 39.7354907    0    0</span></span>
+<span id="cb23-20"><a href="#cb23-20" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; opt       33554432 8 1 1 1.142857 2.457132 73.95241  2.1326260    0    0</span></span></code></pre></div>
+<p>Note that all the evaluation functions <code>xEnergy</code> and
+<code>xFootprint</code> do call <code>optperf</code> before doing their
+evaluations, hence you should not do something like
+<code>pcdEnergy(adjperf(f))</code>, because this only returns what you
+expect if option <code>greensort_perf_calc</code> is <code>&#39;raw&#39;</code>.
+If it is for example <code>&#39;adj&#39;</code> you get double adjustment. Hence
+set option <code>greensort_perf_calc</code>, for example,
+<code>option(greensort_perf_calc=&#39;adj&#39;)</code> and simply use
+<code>pcdEnergy(f)</code>.</p>
+<p>Note that after calibration and with
+<code>option(greensort_perf_calc=&#39;amd&#39;)</code> the energy evaluation
+<code>pcdEnergy</code> gives meaningful results.</p>
+</div>
+<div id="time-kpis" class="section level2">
+<h2>Time KPIs</h2>
+<p>The greeNsort package measures <code>runTime</code> (elapsed time)
+and calculates estimates of <code>lifeTime</code> and
+<code>cpuTime</code>. <code>lifeTime = runTime / processes</code> refers
+to the time that the task process utilizes (= amortizes) the hardware.
+If multiple tasks run in multiple processes it is assumed that the
+equally share the hardware. <code>cpuTime</code> refers to the Integral
+of effective threads over time, calculated under the assumption that up
+to physical cores can be executed in parallel (corrected for the number
+of multiple tasks in parallel processes), just type <code>cpuTime</code>
+to see its definition. Note that <code>p</code> the number of parallel
+processes needs to be set by the user in the measurement results.</p>
+<div class="sourceCode" id="cb24"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a><span class="fu">require</span>(parallel)</span>
+<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Lade nötiges Paket: parallel</span></span>
+<span id="cb24-3"><a href="#cb24-3" aria-hidden="true" tabindex="-1"></a>n <span class="ot">&lt;-</span> <span class="fl">1e6</span></span>
+<span id="cb24-4"><a href="#cb24-4" aria-hidden="true" tabindex="-1"></a>pc <span class="ot">&lt;-</span> <span class="fu">perfcores</span>(<span class="at">logical=</span><span class="cn">FALSE</span>)</span>
+<span id="cb24-5"><a href="#cb24-5" aria-hidden="true" tabindex="-1"></a>p <span class="ot">&lt;-</span> <span class="dv">2</span></span>
+<span id="cb24-6"><a href="#cb24-6" aria-hidden="true" tabindex="-1"></a>th <span class="ot">&lt;-</span> pc <span class="sc">%/%</span> p</span>
+<span id="cb24-7"><a href="#cb24-7" aria-hidden="true" tabindex="-1"></a>cl <span class="ot">&lt;-</span> <span class="fu">makeCluster</span>(p)</span>
+<span id="cb24-8"><a href="#cb24-8" aria-hidden="true" tabindex="-1"></a><span class="fu">invisible</span>(<span class="fu">clusterEvalQ</span>(cl, <span class="fu">require</span>(greeNsort)))</span>
+<span id="cb24-9"><a href="#cb24-9" aria-hidden="true" tabindex="-1"></a><span class="fu">invisible</span>(<span class="fu">clusterExport</span>(cl, <span class="fu">c</span>(<span class="st">&quot;n&quot;</span>,<span class="st">&quot;th&quot;</span>)))</span>
+<span id="cb24-10"><a href="#cb24-10" aria-hidden="true" tabindex="-1"></a><span class="fu">invisible</span>(<span class="fu">clusterEvalQ</span>(cl, {</span>
+<span id="cb24-11"><a href="#cb24-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">set.seed</span>(<span class="dv">1</span>)</span>
+<span id="cb24-12"><a href="#cb24-12" aria-hidden="true" tabindex="-1"></a>  x <span class="ot">&lt;-</span> <span class="fu">runif</span>(n)</span>
+<span id="cb24-13"><a href="#cb24-13" aria-hidden="true" tabindex="-1"></a>  <span class="cn">NULL</span></span>
+<span id="cb24-14"><a href="#cb24-14" aria-hidden="true" tabindex="-1"></a>}))</span>
+<span id="cb24-15"><a href="#cb24-15" aria-hidden="true" tabindex="-1"></a>pm <span class="ot">&lt;-</span> <span class="fu">do.call</span>(<span class="st">&quot;rbind&quot;</span>, <span class="fu">clusterEvalQ</span>(cl, {</span>
+<span id="cb24-16"><a href="#cb24-16" aria-hidden="true" tabindex="-1"></a>  <span class="fu">PKnuthsort</span>(x, <span class="at">threads =</span> th)</span>
+<span id="cb24-17"><a href="#cb24-17" aria-hidden="true" tabindex="-1"></a>}))</span>
+<span id="cb24-18"><a href="#cb24-18" aria-hidden="true" tabindex="-1"></a><span class="fu">stopCluster</span>(cl)</span>
+<span id="cb24-19"><a href="#cb24-19" aria-hidden="true" tabindex="-1"></a>pm[,<span class="st">&quot;p&quot;</span>] <span class="ot">&lt;-</span> <span class="dv">2</span></span>
+<span id="cb24-20"><a href="#cb24-20" aria-hidden="true" tabindex="-1"></a><span class="fu">cbind</span>(pm, <span class="fu">aTime</span>(pm))</span>
+<span id="cb24-21"><a href="#cb24-21" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;                n b p t size       secs     base     core unco dram    runTime</span></span>
+<span id="cb24-22"><a href="#cb24-22" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; PKnuthsort 1e+06 8 2 4    2 0.02869206 1.312020 0.106211    0    0 0.02869206</span></span>
+<span id="cb24-23"><a href="#cb24-23" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; PKnuthsort 1e+06 8 2 4    2 0.02605681 1.246181 0.105509    0    0 0.02605681</span></span>
+<span id="cb24-24"><a href="#cb24-24" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;              lifeTime   cpuTime</span></span>
+<span id="cb24-25"><a href="#cb24-25" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; PKnuthsort 0.01434603 0.1147682</span></span>
+<span id="cb24-26"><a href="#cb24-26" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; PKnuthsort 0.01302841 0.1042272</span></span></code></pre></div>
+</div>
+<div id="footprint-kpis" class="section level2">
+<h2>Footprint KPIs</h2>
+<p>So far we evaluated algorithms only regarding their operating cost
+(runTime or Energy) and ignored the necessary hardware investment. One
+core idea of CO2 sustainability is considering both, operating CO2 and
+embodied CO2. <em>greeNsort<sup>®</sup></em> uses <code>%RAM</code> as a
+proxy measurement for the required hardware. The
+<code>tFootprint = %RAM * runTime</code> measures how much hardware is
+needed for how long. With a single-threaded algorithm
+<code>runTime</code> equals <code>cpuTime</code>, hence
+<code>tFootprint</code> is correlated with operational cost <em>and</em>
+is a measure of hardware invest. <code>tFootprint</code> allows a fair
+comparison of algorithms that have different RAM requirements. For
+algorithms running on an equal number of threads, a comparison ratio of
+two <code>cFootprint = %RAM * cpuTime</code> would give the same as a
+comparison ratio of two <code>tFootprint</code> because the number of
+threads cancels out. If we can do this meaningfully with
+<code>cpuTime</code> as a measure of operational cost, we can do it also
+with <code>Energy</code>, and define
+<code>eFootprint = %RAM * Energy</code>. This gives us a fair comparison
+regarding Energy consumption between algorithms that have different RAM
+requirements:</p>
+<div class="sourceCode" id="cb25"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a>e <span class="ot">&lt;-</span> <span class="fu">rbind</span>(<span class="at">Knuthsort=</span>k, <span class="at">Frogsort2=</span>f)</span>
+<span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a>e <span class="ot">&lt;-</span> <span class="fu">cbind</span>(e, <span class="fu">aFootprint</span>(e))</span>
+<span id="cb25-3"><a href="#cb25-3" aria-hidden="true" tabindex="-1"></a><span class="fu">rbind</span>(e, <span class="at">Ratio=</span>e[<span class="dv">1</span>,]<span class="sc">/</span>e[<span class="dv">2</span>,])</span>
+<span id="cb25-4"><a href="#cb25-4" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;                  n b p t     size     secs      base     core unco dram</span></span>
+<span id="cb25-5"><a href="#cb25-5" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Knuthsort 33554432 8 1 1 2.000000 3.017062 98.708502 6.897654    0    0</span></span>
+<span id="cb25-6"><a href="#cb25-6" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Frogsort2 33554432 8 1 1 1.142857 2.457132 73.952413 2.132626    0    0</span></span>
+<span id="cb25-7"><a href="#cb25-7" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Ratio            1 1 1 1 1.750000 1.227879  1.334757 3.234348  NaN  NaN</span></span>
+<span id="cb25-8"><a href="#cb25-8" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;           tFootprint cdFootprint pcdFootprint bcdFootprint</span></span>
+<span id="cb25-9"><a href="#cb25-9" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Knuthsort   6.034124   13.795308    38.472434   211.212312</span></span>
+<span id="cb25-10"><a href="#cb25-10" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Frogsort2   2.808151    2.437287    13.001917    86.954330</span></span>
+<span id="cb25-11"><a href="#cb25-11" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Ratio       2.148789    5.660108     2.958982     2.429003</span></span></code></pre></div>
+<p>Note that for in-RAM algorithms, <em>Footprints</em> have a couple of
+advantages over the Software Carbon Intensity (SCI) specification of the
+Green Software Foundation (GSF):</p>
+<ul>
+<li>measurement is simple</li>
+<li>Footprints are an extension of the traditional measurement of
+runTime or cpuTime</li>
+<li>Footprints are independent of the share of renewables at the
+location of the machine</li>
+<li>Footprints can be calculated retrospectively on published runTime
+plus %RAM</li>
+</ul>
+<p>Here is an example that shows the power of the <em>Footprint</em>
+KPIs: High-level programming languages tend to be more convenient and
+less energy-efficient, but here are huge differences between comparable
+languages. Pereira, Couto, Ribeiro, Rua, Cunha, Fernandes and Saraiva
+(2017) compared <a href="https://sites.google.com/view/energy-efficiency-languages/home">“<em>Energy
+Efficiency across Programming Languages: How does Energy, Time and
+Memory Relate?</em>”</a> and reported <em>Energy</em>, <em>Time</em> and
+<em>Memory</em> normalized to the costs of <em>C</em>:</p>
+<p><img src="data:image/png;base64,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" /><!-- --></p>
+<p>With this data we can calculate the <em>greeNsort<sup>®</sup></em>
+KPIs <em>tFootprint</em> and <em>tFootprint</em>. Let’s here compare <a href="https://en.wikipedia.org/wiki/C_(programming_language)"><em>C</em></a>,
+<a href="https://en.wikipedia.org/wiki/Rust_(programming_language)"><em>Rust</em></a>,
+<a href="https://en.wikipedia.org/wiki/Fortran"><em>Fortran</em></a>, <a href="https://en.wikipedia.org/wiki/Go_(programming_language)"><em>Go</em></a>,
+<a href="https://en.wikipedia.org/wiki/Julia_(programming_language)"><em>Julia</em></a>,
+<a href="https://en.wikipedia.org/wiki/C_Sharp_(programming_language)"><em>C#</em></a>,
+<a href="https://en.wikipedia.org/wiki/Java_(programming_language)"><em>Java</em></a>,
+<a href="https://en.wikipedia.org/wiki/JavaScript"><em>Javascript</em></a>
+and <a href="https://en.wikipedia.org/wiki/Python_(programming_language)"><em>Python</em></a>:</p>
+<div class="sourceCode" id="cb26"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a>elang<span class="sc">$</span>eFootprint <span class="ot">&lt;-</span> elang<span class="sc">$</span>Energy <span class="sc">*</span> elang<span class="sc">$</span>Memory</span>
+<span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a>elang<span class="sc">$</span>tFootprint <span class="ot">&lt;-</span> elang<span class="sc">$</span>Time <span class="sc">*</span> elang<span class="sc">$</span>Memory</span>
+<span id="cb26-3"><a href="#cb26-3" aria-hidden="true" tabindex="-1"></a>elang <span class="ot">&lt;-</span> elang[<span class="fu">order</span>(elang<span class="sc">$</span>eFootprint),<span class="fu">c</span>(<span class="st">&quot;Memory&quot;</span>,<span class="st">&quot;Time&quot;</span>,<span class="st">&quot;Energy&quot;</span>,<span class="st">&quot;tFootprint&quot;</span>,<span class="st">&quot;eFootprint&quot;</span>)]</span>
+<span id="cb26-4"><a href="#cb26-4" aria-hidden="true" tabindex="-1"></a><span class="do">##require(kableExtra, quietly = TRUE)</span></span>
+<span id="cb26-5"><a href="#cb26-5" aria-hidden="true" tabindex="-1"></a><span class="co">#round(elang, 2) %&gt;% kbl(caption = &quot;Language Inefficiency relative to C (ordered by eFootprint)&quot;) %&gt;% kable_paper(&quot;striped&quot;)</span></span>
+<span id="cb26-6"><a href="#cb26-6" aria-hidden="true" tabindex="-1"></a><span class="fu">round</span>(elang, <span class="dv">2</span>)</span>
+<span id="cb26-7"><a href="#cb26-7" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;            Memory  Time Energy tFootprint eFootprint</span></span>
+<span id="cb26-8"><a href="#cb26-8" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; C            1.00  1.00   1.00       1.00       1.00</span></span>
+<span id="cb26-9"><a href="#cb26-9" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Rust         1.05  1.04   1.03       1.09       1.08</span></span>
+<span id="cb26-10"><a href="#cb26-10" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Fortran      1.24  4.20   2.52       5.21       3.12</span></span>
+<span id="cb26-11"><a href="#cb26-11" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Go           1.05  2.83   3.23       2.97       3.39</span></span>
+<span id="cb26-12"><a href="#cb26-12" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Julia        3.90  3.53   1.85      13.73       7.22</span></span>
+<span id="cb26-13"><a href="#cb26-13" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; C#           2.85  3.14   3.14       8.95       8.95</span></span>
+<span id="cb26-14"><a href="#cb26-14" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Java         6.01  1.89   1.98      11.36      11.90</span></span>
+<span id="cb26-15"><a href="#cb26-15" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Javascript   4.59  6.52   4.45      29.93      20.43</span></span>
+<span id="cb26-16"><a href="#cb26-16" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Python       2.80 71.90  75.88     201.32     212.46</span></span></code></pre></div>
+<p>We all knew that python is bad. But combining speed and %RAM in the
+Footprint KPIs shows us that it is by factor 200 more expensive than C!
+The interactive mathematical language Julia is by orders of magnitude
+more efficient than its data-science competitors Python and R (for R see
+the <a href="https://julialang.org/benchmarks/"><em>julia
+benchmarks</em></a> and <a href="https://towardsdatascience.com/r-vs-python-vs-julia-90456a2bcbab"><em>R-vs-Python-vs-Julia</em></a>
+and it even isn’t too far off Fortran. However, Julia claims to be
+“only” by factor 2 slower than C (and delivers factor 2 in Energy), but
+also considering memory, it is rather factor 10. And wannabe “write
+once, run anywhere”-Java is even worse, not because it is very slow, but
+because it wastes hardware. And an extra virtualization layer to run in
+every browser makes Javascript yet another factor 2 more expensive. Of
+course such benchmark-comparisons are to be taken with a grain of salt,
+because the measured tasks are not representative and because
+“inefficient” languages such as R or Python can still be efficient with
+efficient libraries.</p>
+<p>The Footprint KPIs help to rank software on a single dimension
+considering both, the variable cost of running the software as well as
+the fixed cost of the required hardware.</p>
+</div>
+<div id="kpi-labels" class="section level2">
+<h2>KPI labels</h2>
+<p>If you are doing plots with KPIs, you may want to use abbreviated KPI
+names or KPI names including units. Functions <code>perfnames</code>,
+<code>perflabels</code> and <code>perfunits</code> are your friends. Not
+that <code>perfnames</code>, <code>perflabels</code> and
+<code>perfunits</code> have <code>perfnames</code> as their
+<code>names</code>, hence you can simply subscript as in</p>
+<div class="sourceCode" id="cb27"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a><span class="fu">perflabels</span>()[<span class="st">&quot;bcdEnergy&quot;</span>]</span>
+<span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; bcdEnergy </span></span>
+<span id="cb27-3"><a href="#cb27-3" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;    &quot;bcdE&quot;</span></span></code></pre></div>
+</div>
+<div id="other-measurement-methods" class="section level2">
+<h2>Other Measurement Methods</h2>
+<p>The measurement methods described above are our iteration of Energy
+measurement.</p>
+<p>Our first iteration was spawning a separate measurement process using
+linux <code>perf</code>. This requires big tasks that run long enough
+ans suffers from including several unwanted overheads. However, the
+related functions <code>measure1</code>, <code>measurea</code>,
+<code>measurer</code>, <code>measures</code> allow to measure additional
+KPIs such as cache misses.</p>
+<p>Our second attempt tried to use PAPI with added POWERCAP or RAPL
+libraries. PAPI also allows to measure a broader range of KPIs. However,
+due to a disappointing bugs in the PAPI RAPL measurement, we decided to
+read the powercap RAPL counters directly.</p>
+<p>See also </p>
+</div>
+<div class="footnotes footnotes-end-of-document">
+<hr />
+<ol>
+<li id="fn1"><p>for exact measurement of single very short code sections
+see Marcus Hähnel, Björn Döbel, Marcus Völp, Hermann Härtig (2012)
+Measuring Energy Consumption for Short Code Paths Using RAPL<a href="#fnref1" class="footnote-back">↩︎</a></p></li>
+</ol>
+</div>
+
+
+
+<!-- code folding -->
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

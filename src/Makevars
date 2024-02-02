@@ -1,0 +1,19 @@
+## -- set CFLAGS and CXXFLAGS without -O2 in ~/.R/Makevars  ---------------
+## instead of: CFLAGS = -g -O2 -fdebug-prefix-map=/build/r-base-DdVjkr/r-base-4.3.2=. -fstack-protector-strong -Wformat -Werror=format-security -Wdate-time -D_FORTIFY_SOURCE=2 $(LTO)
+#CFLAGS = -g -fstack-protector-strong -Wformat -Werror=format-security -Wdate-time -D_FORTIFY_SOURCE=2 $(LTO)
+
+##instead of: CXXFLAGS = -g -O2 -fdebug-prefix-map=/build/r-base-DdVjkr/r-base-4.3.2=. -fstack-protector-strong -Wformat -Werror=format-security -Wdate-time -D_FORTIFY_SOURCE=2 $(LTO)
+#CXXFLAGS = -g -fstack-protector-strong -Wformat -Werror=format-security -Wdate-time -D_FORTIFY_SOURCE=2 $(LTO)
+
+## default: CC = gcc -std=gnu99
+## other version: CC = gcc-6 -std=gnu99
+## other compiler: CC = clang-7 -std=gnu99
+#CFLAGS = -g -fstack-protector-strong -Wformat -Werror=format-security -Wdate-time -D_FORTIFY_SOURCE=2 -g $(LTO)
+
+## -- set package configuration -------------------------------
+
+PKG_CFLAGS=-Wno-unused-function -O3 -march=native -UNDEBUG -Wall -pedantic
+
+# needed for realtime timer and threading measurement
+PKG_LIBS = -lrt  -lpthread
+

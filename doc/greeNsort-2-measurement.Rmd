@@ -1,0 +1,388 @@
+---
+title: "greeNsort-2-measurement"
+author: "Dr. Jens Oehlschlägel"
+output: 
+  rmarkdown::html_vignette:
+    toc: true
+    toc_depth: 2
+vignette: >
+  %\VignetteIndexEntry{greeNsort-2-measurement}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+## Intro 
+
+This Vignette guides you through the measurement capabilities of the greeNsort package. We assume you went through the [*greeNsort-1-quickstart*](greeNsort-1-quickstart.html) vignette, your package is properly configured, compiled and you have granted access to the powercap RAPL counters. 
+
+The *greeNsort* Rpackage directly reads from the powercap RAPL counters using simple custom code. RAPL measures the energy of the socket, not of a program, a process or a thread. Hence it is important to minimize or standardize competing load on the same machine. Note that RStudio itself is multithreaded, hence measurements done from a simple R console minimize error variance. Note further that RAPL on Intel provides some separation of base and core load (but not AMD), and that the greeNsort package provides support for calibration to (standardized) background load.
+
+```{r setup}
+library(greeNsort)
+```
+
+## Number of cores
+
+Function `perfcores` diagnoses the number of cores of your machine:
+
+```{r}
+c(logical=perfcores(), physical=perfcores(logical=FALSE))
+```
+
+## RAPL configuration
+
+Function  `perfmachine` returns the powercap RAPL paths found on your machine, it tests four components `package`, `core`, `uncore` and `dram`. Absent paths are returned as `NA`:
+
+```{r}
+perfmachine()
+```
+
+Function  `perfcompiled` returns the  RAPL paths found compiled into the greeNsort package , it returns four components `package`, `core`, `uncore` and `dram`. Absent paths are returned as `NA`:
+
+```{r}
+perfcompiled()
+```
+
+
+Function  `perfcheck` compares the RAPL paths on your machine with those compiled into the greeNsort package, it returns `TRUE` if they match, otherwise `FALSE`:
+
+```{r}
+perfcheck()
+```
+
+Function  `perfconfig` writes the paths found on your machine to `src/powercap_config.h` to prepare recompilation of the package.
+
+```
+perfconfig()
+```
+
+## RAPL grants
+
+Function  `perfgrants` asks for the root password and grants read access to the RAPL paths.
+
+```
+perfgrants()
+```
+
+## R measurement
+
+Here we describe a generic interface which allows to measure *any* task from within R. Note that this measures C-costs together with the costs of the R interpreter overhead. The *greeNsort<sup>&reg;</sup>* algorithms are measured without R overhead directly in the R/C glue-code.  
+
+Function  `perfmax` returns the maximum RAPL counter values (and Inf for a timer)
+
+```{r}
+perfmax()
+```
+
+Function  `perfnow` returns the current RAPL counter values (and a timer value). The RAPL counters count from `0` to `perfmax` and then wraps around at counter overflow. The greeNsort package functions cope with a one-time overflow during the measurement period. This implies that the size of a task that can be measured is limited.
+
+```{r}
+perfnow()
+```
+
+Note that the RAPL package measurement is a total which contains `core`, `uncore` and the basic energy consumption of the socket.
+
+Function  `perfthen` takes an earlier `perfnow` start measurement as input, reads the counters and returns decomposed results in the same structure as `retperf()`, where `base = package - core - uncore` and `unco = uncore`:
+
+
+```{r}
+invisible(prunif(32))  ## dummy call to load prunif 
+n <- 1e7
+p <- perfnow()
+invisible(sample(n))
+s <- perfthen(p, 'runif')
+p <- perfnow()
+invisible(runif(n))
+r <- perfthen(p, 'runif')
+p <- perfnow()
+invisible(prunif(n))
+pr <- perfthen(p, 'prunif')
+rbind(s, r, pr)
+```
+
+- `dram` is the energy of the RAM in Joule (zero under AMD), the other three components are related to processing
+- `base` is the Joules of the CPU not attributed to processing cores. Note that under AMD base increases significantly with load and hence must not be ignored
+- `core` is the Joules of the CPU attributed to processing cores. 
+- `unco` (uncore) is the remaining Joules of the socket, typically of the GPU (or zero under AMD)
+
+Note that the exact timing behaviour of the counter is undefined, hence for very short measurements `core` can increase without an increase of `package`, hence `base` can be negative. This is implies that this setup is not suitable for exact measurement of single very short code sections^[for exact measurement of single very short code sections see Marcus Hähnel, Björn Döbel, Marcus Völp, Hermann Härtig (2012) Measuring Energy Consumption for Short Code Paths Using RAPL], however, short code sections can still be measured via multiple measurements and statistical evaluation. 
+
+
+## Monitoring
+
+Function `perfmon` allows simple energy monitoring of the machine, hence can be used to observe the energy consumption of other applications. `perfmon` first creates a baseline idle measurement during `refsec` seconds, then monitors for `maxsec` seconds in interval of `monsec` seconds. 
+
+```{r}
+perfmon(refsec = 3, monsec=1, maxsec = 3)
+```
+
+The output is given a percentage relative to the baseline. 
+
+Now run `perfmon(refsec = 10)`, you can interrupt at any time. Don't do anything during the baseline phase, then check the influence of moving your mouse, opening a browser, etc. 
+
+
+## Idle measurement
+
+We mentioned above that the *greeNsort<sup>&reg;</sup>* algorithms are measured without R overhead directly in the R/C glue-code. The internal C-call returns with an attribute `perf` which is fed through `retperf` for standardization of names. 
+
+Function `perfsleep(x)` measures for `x` seconds while the process sleeps. 
+
+```{r}
+i <- perfsleep(5)
+i
+```
+
+## Measurement of an algorithm
+
+Now let's create a dataset and measure the reference algorithm *Knuthsort*:
+
+```{r}
+x <- runif(1e6)    ## a vector with 1e6 uniform random numbers
+Knuthsort(x)
+```
+
+Note that unlike the tradition in R this call sorts its input x and returns a raw measurement which autoprints.
+
+`n` gives us the number of elements of the input data.
+`b` gives us the number of bytes per element (8 for double).
+
+Huge vectors with uniform random numbers can be created sorted faster in parallel
+
+```{r}
+x <- prunif(1e8)
+PKnuthsort(x)
+```
+
+`p` gives us the number of processes used (always 1 unless we tell otherwise).
+`t` gives us the number of threads used (depends on your machine, see `perfcores`)
+
+
+## Comparing two algorithms
+
+Scientists know that measurements have error variance. Smaller short running tasks are much more at risk for disturbance by random events on your machine than bigger ones, hence for simple comparisons of single measurements it is recommended to use rather large tasks. Let's demonstrate this by calculating the coefficient of variation for small and large tasks with 50 measurements each:
+
+```{r}
+f <- function(n){x <- runif(n); secs(Quicksort2(x))}
+s <- sapply(rep(1000, 50), f); vs <- sd(s)/mean(s)
+l <- sapply(rep(1000000, 50), f); vl <- sd(l)/mean(l)
+c(small=vs, large=vl, ratio=vs/vl)
+```
+
+Now let's do a simple (big) comparison between the *greeNsort<sup>&reg;</sup>* algorithm *Frogsort2* and the reference algorithm *Knuthsort*:
+
+```{r}
+x <- prunif(2^25)
+y <- x[]  ## now we have two identical copies of the data
+k <- Knuthsort(x)
+f <- Frogsort2(y)
+e <- rbind(k, f)
+rbind(e, Ratio=e["Knuthsort",]/e["Frogsort2",])
+```
+
+`size=2` says that *Knuthsort* needs 200% RAM relative to its data size, i.e. 100 %buffer. *Frogsort2* needs 14% buffer (can be changed, see `?Frogsort2`). Hence *Frogsort2* needs 57% of the RAM of *Knuthsort*, and at the same time only 74% of the runTime. Note the non-adjusted extractor functions:
+
+```{r}
+cbind(
+  size(f)
+, secs(f)
+, sizesecs(f)
+, base(f)
+, core(f)
+, unco(f)
+, dram(f)
+)
+```
+
+## KPIs with perf
+
+Function `perf` returns the most important KPIs
+
+```{r}
+pe <- perf(e)
+rbind(pe, Ratio=pe[1,]/pe[2,])
+```
+
+Note that the KPI calculation functions that `perf` calls don't know that the Ratio row does not contain absolute measurements. Hence for a ratio the energy evaluations we need to use `perf(f) / perf(k)` instead of `perf(k/f)`. While `perf` is easy to use, there is quite an amount of logic behind the KPIs in `perf`, which is explained in the following sections.
+
+
+## Energy KPIs
+
+If you don't want to dive into the subtleties of energy-measurement, simply use `bcdEnergy` for comparing Energy measurements. Which energy components should we use? Let's abbreviate the Energy components:
+
+- `b=base` 
+- `c=core` 
+- `d=dram` 
+- `u=unco` 
+
+Assuming so far, that we don't use the GPU for sorting, `unco` is rather error variance. By adding certain combinations of `b,c,d` we get energy measurements which are useful for evaluation in certain situations. You see all of them by calling the convenience function `aEnergy`:
+
+```{r}
+aEnergy(e)
+```
+
+On AMD the only meaningful choice seems to be `bcdEnergy` because `base` and `core` are not properly separated (and `dram` is not measured, hence zero). 
+
+On Intel, with a relatively reliable separation of `base` and `core` and a reported `dram` component, we have more possibilities. We can drop the `base` component and only look at `cdEnergy` or even only use `bEnergy` ignoring the RAM energy. 
+
+There is an alternative to adding the `base` components either completely or not at all: assigning a part of `base` proportional to the share of cores used to all available cores, this is what `pcdEnergy` does. Depending on context, all of these have justified applications
+
+- `cEnergy` and `cdEnergy` gives a measurement for the extra energy needed for the task on a machine running 24/7 with little load, e.g. a home-server, where the `base` energy will be expensed regardless of algorithm efficiency.
+- `pcdEnergy` gives a fair measurement of the total Energy needed for the task on a multi-user server which is sized to run at full throughput.
+- `bcdEnergy` gives a fair measurement of the total Energy needed for the task on a single-user machine such as a notebook which is only running until work is done.
+
+
+## Calibrating Energy
+
+The attentive reader will have noticed, that the `core` energy of the idle-measurement was above zero, because several services are running in the background. This suggests to treat `cd` during idle as `base`. *greeNsort<sup>&reg;</sup>* provides a set of functions for measuring, predicting and calibrating background activities.
+
+A proper calibration measurement needs a lots of samples including long ones. Here we just do a quick example:
+
+```{r}
+perfcalibrate(3, minsec = 2, maxsec = 2, save=FALSE)
+```
+
+Take 5 minutes to calibrate your machine thoroughly and save the result as `perfbackground.RData` in the current directory (`getwd()`).
+
+```
+perfcalibrate(50, minsec = 0, maxsec = 12, save=TRUE)
+```
+
+
+`perfcalibrate()` has created idle measurements and fitted models that predict `bcd` from 'secs'. 
+This is stored as an environment `.perfbackground` in-RAM in the global environment (and optionally in a file `perfbackground.RData`). 
+
+```{r}
+.perfbackground
+```
+
+A couple of extractor functions modifies measurement data:
+
+- `rawperf` returns the data unmodified
+- `bacperf` returns uses `.perfbackground` to create background predictions based on `secs` of its input
+- `difperf` returns `rawperf` minus `bacperf`
+- `adjperf` returns `core` and `dram` minus their background values and add this to `base`
+- `amdperf` adds `base` to `core` in background and measurement before applying the adjustments of `adjperf`
+- `optperf` returns one of `rawperf`, `diffperf`, `adjperf` or `amdperf` depending on R option `getOption("greensort_perf_calc", default="raw")`
+
+```{r}
+options(greensort_perf_calc= "raw")
+r <- rbind(
+  f
+, rawperf(f)
+, bacperf(f)
+, difperf(f)
+, adjperf(f)
+, amdperf(f)
+, optperf(f)
+)
+rownames(r)[-1] <- c("raw","bac","dif","adj","amd","opt")
+r
+```
+
+Note that all the evaluation functions `xEnergy` and `xFootprint` do call `optperf` before doing their evaluations, hence you should not do something like `pcdEnergy(adjperf(f))`, because this only returns what you expect if option `greensort_perf_calc` is `'raw'`. If it is for example `'adj'` you get double adjustment. Hence set  option `greensort_perf_calc`, for example, `option(greensort_perf_calc='adj')` and simply use `pcdEnergy(f)`. 
+
+Note that after calibration and with `option(greensort_perf_calc='amd')` the energy evaluation `pcdEnergy` gives meaningful results. 
+
+
+
+## Time KPIs
+
+The greeNsort package measures `runTime` (elapsed time) and calculates estimates of  `lifeTime` and `cpuTime`. `lifeTime = runTime / processes` refers to the time that the task process utilizes (= amortizes) the hardware. If multiple tasks run in multiple processes it is assumed that the equally share the hardware. `cpuTime` refers to the Integral of effective threads over time, calculated under the assumption that up to physical cores can be executed in parallel (corrected for the number of multiple tasks in parallel processes), just type `cpuTime` to see its definition. Note that `p` the number of parallel processes needs to be set by the user in the measurement results.
+
+```{r}
+require(parallel)
+n <- 1e6
+pc <- perfcores(logical=FALSE)
+p <- 2
+th <- pc %/% p
+cl <- makeCluster(p)
+invisible(clusterEvalQ(cl, require(greeNsort)))
+invisible(clusterExport(cl, c("n","th")))
+invisible(clusterEvalQ(cl, {
+  set.seed(1)
+  x <- runif(n)
+  NULL
+}))
+pm <- do.call("rbind", clusterEvalQ(cl, {
+  PKnuthsort(x, threads = th)
+}))
+stopCluster(cl)
+pm[,"p"] <- 2
+cbind(pm, aTime(pm))
+```
+
+
+## Footprint KPIs
+
+So far we evaluated algorithms only regarding their operating cost (runTime or Energy) and ignored the necessary hardware investment. One core idea of CO2 sustainability is considering both, operating CO2 and embodied CO2.  *greeNsort<sup>&reg;</sup>* uses `%RAM` as a proxy measurement for the required hardware. The `tFootprint = %RAM * runTime` measures how much hardware is needed for how long. With a single-threaded algorithm `runTime` equals `cpuTime`, hence `tFootprint` is correlated with operational cost *and* is a measure of hardware invest. `tFootprint` allows a fair comparison of algorithms that have different RAM requirements. For algorithms running on an equal number of threads, a comparison ratio of two `cFootprint = %RAM * cpuTime` would give the same as a comparison ratio of two `tFootprint` because the number of threads cancels out. If we can do this meaningfully with `cpuTime` as a measure of operational cost, we can do it also with `Energy`, and define `eFootprint = %RAM * Energy`. This gives us a fair comparison regarding Energy consumption between algorithms that have different RAM requirements:
+
+```{r}
+e <- rbind(Knuthsort=k, Frogsort2=f)
+e <- cbind(e, aFootprint(e))
+rbind(e, Ratio=e[1,]/e[2,])
+```
+
+Note that for in-RAM algorithms, *Footprints* have a couple of advantages over the Software Carbon Intensity (SCI) specification of the Green Software Foundation (GSF):
+
+- measurement is simple
+- Footprints are an extension of the traditional measurement of runTime or cpuTime
+- Footprints are independent of the share of renewables at the location of the machine
+- Footprints can be calculated retrospectively on published runTime plus %RAM
+
+Here is an example that shows the power of the *Footprint* KPIs: High-level programming languages tend to be more convenient and less energy-efficient, but here are huge differences between comparable languages. Pereira, Couto, Ribeiro, Rua, Cunha, Fernandes and Saraiva (2017) compared  ["*Energy Efficiency across Programming Languages: How does Energy, Time and Memory Relate?*"](https://sites.google.com/view/energy-efficiency-languages/home) and reported *Energy*, *Time* and *Memory* normalized to the costs of *C*: 
+
+```{r elang, echo=FALSE}
+main <- structure(list(Energy = c(1, 1.03, 3.23, 2.52, 3.14, 1.98, 4.45, 
+75.88), Time = c(1, 1.04, 2.83, 4.2, 3.14, 1.89, 6.52, 71.9), 
+    Memory = c(1, 1.05, 1.05, 1.24, 2.85, 6.01, 4.59, 2.8)), row.names = c("C", 
+"Rust", "Go", "Fortran", "C#", "Java", "Javascript", "Python"
+), class = "data.frame")
+extra <- structure(list(Energy = c(1, 1.8), Time = c(1, 3.39), Memory = c(1, 
+3.71)), row.names = c("Rust", "Julia"), class = "data.frame")
+elang <- rbind(main, Julia=extra["Julia",]*main["Rust",]) 
+plot(elang[-1,"Energy"], elang[-1,"Memory"], type="n", xlab="Energy relative to C  (logarithmic)", ylab="Memory relative to C (logarithmic)", log="xy")
+text(elang[-1,"Energy"], elang[-1,"Memory"], rownames(elang)[-1])
+```
+
+With this data we can calculate the *greeNsort<sup>&reg;</sup>* KPIs *tFootprint* and *tFootprint*. Let's here compare [*C*](https://en.wikipedia.org/wiki/C_(programming_language)), [*Rust*](https://en.wikipedia.org/wiki/Rust_(programming_language)), [*Fortran*](https://en.wikipedia.org/wiki/Fortran), [*Go*](https://en.wikipedia.org/wiki/Go_(programming_language)),  [*Julia*](https://en.wikipedia.org/wiki/Julia_(programming_language)), [*C#*](https://en.wikipedia.org/wiki/C_Sharp_(programming_language)), [*Java*](https://en.wikipedia.org/wiki/Java_(programming_language)), [*Javascript*](https://en.wikipedia.org/wiki/JavaScript) and [*Python*](https://en.wikipedia.org/wiki/Python_(programming_language)):
+
+```{r} 
+elang$eFootprint <- elang$Energy * elang$Memory
+elang$tFootprint <- elang$Time * elang$Memory
+elang <- elang[order(elang$eFootprint),c("Memory","Time","Energy","tFootprint","eFootprint")]
+##require(kableExtra, quietly = TRUE)
+#round(elang, 2) %>% kbl(caption = "Language Inefficiency relative to C (ordered by eFootprint)") %>% kable_paper("striped")
+round(elang, 2)
+```
+
+We all knew that python is bad. But combining speed and %RAM in the Footprint KPIs shows us that it is by factor 200 more expensive than C! The interactive mathematical language Julia is by orders of magnitude more efficient than its data-science competitors Python and R (for R see the [*julia benchmarks*](https://julialang.org/benchmarks/) and [*R-vs-Python-vs-Julia*](https://towardsdatascience.com/r-vs-python-vs-julia-90456a2bcbab) and it even isn't too far off Fortran. However, Julia claims to be "only" by factor 2 slower than C (and delivers factor 2 in Energy), but also considering memory, it is rather factor 10. And wannabe "write once, run anywhere"-Java is even worse, not because it is very slow, but because it wastes hardware. And an extra virtualization layer to run in every browser makes Javascript yet another factor 2 more expensive. Of course such benchmark-comparisons are to be taken with a grain of salt, because the measured tasks are not representative and because "inefficient" languages such as R or Python can still be efficient with efficient libraries. 
+
+The Footprint KPIs help to rank software on a single dimension considering both, the variable cost of running the software as well as the fixed cost of the required hardware.  
+
+
+## KPI labels
+
+If you are doing plots with KPIs, you may want to use abbreviated KPI names or KPI names including units. Functions `perfnames`, `perflabels` and `perfunits` are your friends. 
+Not that  `perfnames`, `perflabels` and `perfunits` have `perfnames` as their `names`, hence you can simply subscript as in 
+
+```{r} 
+perflabels()["bcdEnergy"]
+```
+
+
+## Other Measurement Methods
+
+The measurement methods described above are our iteration of Energy measurement. 
+
+Our first iteration was spawning a separate measurement process using linux `perf`. This requires big tasks that run long enough ans suffers from including several unwanted overheads. However, the related functions `measure1`, `measurea`, `measurer`, `measures` allow to measure additional KPIs such as cache misses. 
+
+Our second attempt tried to use PAPI with added POWERCAP or RAPL libraries. PAPI also allows to measure a broader range of KPIs. However, due to a disappointing bugs in the PAPI RAPL measurement, we decided to read the powercap RAPL counters directly.  
+
+See also \url{https://web.eece.maine.edu/~vweaver/projects/rapl/}

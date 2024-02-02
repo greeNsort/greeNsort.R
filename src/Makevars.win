@@ -1,0 +1,15 @@
+##set in ~/.R/Makevars
+#was: CFLAGS = -g -O2 -fdebug-prefix-map=/build/r-base-uuRxut/r-base-3.6.1=. -fstack-protector-strong -Wformat -Werror=format-security -Wdate-time -D_FORTIFY_SOURCE=2 -g $(LTO)
+#was: CC = gcc -std=gnu99
+#CC = gcc-6 -std=gnu99
+#CC = gcc-7 -std=gnu99
+#CC = gcc-8 -std=gnu99
+#CFLAGS = -g -ftree-loop-if-convert -ftree-loop-if-convert-stores -fif-conversion -fif-conversion2 -fstack-protector-strong -Wformat -Werror=format-security -Wdate-time -D_FORTIFY_SOURCE=2 -g $(LTO)
+#CC = clang-7 -std=gnu99
+
+#CFLAGS = -g -fstack-protector-strong -Wformat -Werror=format-security -Wdate-time -D_FORTIFY_SOURCE=2 -g $(LTO)
+
+PKG_CFLAGS=-Wno-unused-function -O3 -march=native -UNDEBUG -Wall -pedantic
+# needed for realtime timer and threading measurement
+PKG_LIBS = -lpthread
+
