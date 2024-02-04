@@ -13,7 +13,7 @@ Suggests:
     roxygen2,
     parallel,
     rTRNG
-Description: Functions for timing a multitude of sorting algorithms. Note that these are optimized for measuerment and comparison, not for production use.
+Description: Functions for measuring a multitude of sorting algorithms. Note that these are optimized for measurement and comparison, not for production use.
 License: file LICENSE
 Copyright: Dr. Jens Oehlschlägel
 LazyLoad: yes
